@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <stack>
-#include "State.hpp"
+#include "States/State.hpp"
 #include <vector>
 
 class State;

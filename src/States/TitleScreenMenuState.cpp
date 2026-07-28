@@ -1,25 +1,18 @@
-#include "../header/TitleScreenMenu.hpp"
-#include "../header/Game.hpp"
-#include "../header/OptionState.hpp"
+#include "States/TitleScreenMenuState.hpp"
+#include "Core/Game.hpp"
+#include "States/OptionState.hpp"
 #include <iostream>
 
-TitleScreenMenu::TitleScreenMenu(Game* game)
+TitleScreenMenuState::TitleScreenMenuState()
 {
-	this->initGame(game);
 	this->initFont();
 	this->initTitle();
 	this->initStartText();
 	this->initOptionText();
 	this->initBackground();
-
 }
 
-void TitleScreenMenu::initGame(Game* game)
-{
-	this->game = game;
-}
-
-void TitleScreenMenu::initFont()
+void TitleScreenMenuState::initFont()
 {
 	if (!this->titleFont.loadFromFile("assets/fonts/Orbitron/static/Orbitron-Regular.ttf"))
 	{
@@ -27,7 +20,7 @@ void TitleScreenMenu::initFont()
 	}
 }
 
-void TitleScreenMenu::initTitle()
+void TitleScreenMenuState::initTitle()
 {
 	this->titleText.setFont(this->titleFont);
 	this->titleText.setString("Tiphereth");
@@ -41,17 +34,17 @@ void TitleScreenMenu::initTitle()
 	this->titleText.setPosition(1920.f / 2.0f, 1080.f / 3.0f);
 }
 
-void TitleScreenMenu::initStartText()
+void TitleScreenMenuState::initStartText()
 {
 	this->startText.setFont(this->titleFont);
-	this->startText.setString("[Entrer] Jouer");
+	this->startText.setString("Jouer");
 	this->startText.setCharacterSize(50);
 	sf::FloatRect textRect = this->startText.getLocalBounds();
 	this->startText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 	this->startText.setPosition(1920.f / 2.0f, 1080.f / 2.0f);
 }
 
-void TitleScreenMenu::initOptionText()
+void TitleScreenMenuState::initOptionText()
 {
 	this->optionText.setFont(this->titleFont);
 	this->optionText.setString("[O] Option");
@@ -61,7 +54,7 @@ void TitleScreenMenu::initOptionText()
 	this->optionText.setPosition(1920.f / 2.0f, 1080.f / 1.5f);
 }
 
-void TitleScreenMenu::initBackground()
+void TitleScreenMenuState::initBackground()
 {
 	/* if (!this->backgroundTexture.loadFromFile("assets/textures/menu_bg.png"))
 	{
@@ -71,12 +64,13 @@ void TitleScreenMenu::initBackground()
 	*/
 }
 
-void TitleScreenMenu::handleInput()
+void TitleScreenMenuStatehandleInput()
 {
 
 }
 
-void TitleScreenMenu::handleEvent(sf::Event event)
+// Do the input only one time.
+void TitleScreenMenuState::handleEvent(sf::Event event)
 {
 	// Check if the event (so only one time) is a key pressed
 	if (event.type == sf::Event::KeyPressed)
@@ -86,7 +80,7 @@ void TitleScreenMenu::handleEvent(sf::Event event)
 		// Escape -> close game
 		if (event.key.code == sf::Keyboard::Escape)
 		{
-			this->game->popState();
+			//this->game->popState();
 		}
 
 		// Enter -> start game
@@ -97,18 +91,19 @@ void TitleScreenMenu::handleEvent(sf::Event event)
 
 		if (event.key.code == sf::Keyboard::O)
 		{
-			this->game->pushState(std::make_unique<OptionState>(this->game));
+			//this->game->pushState(std::make_unique<OptionState>(this->game));
 		}
 
 	}
 }
 
-void TitleScreenMenu::update(float deltaTime)
+//Do the input or whatever at each frames.
+void TitleScreenMenuState::update(float deltaTime)
 {
 
 }
 
-void TitleScreenMenu::draw(sf::RenderWindow& window)
+void TitleScreenMenuState::draw(sf::RenderWindow& window)
 {
 	// window.draw(this->backgroundSprite);
 	window.draw(this->titleText);

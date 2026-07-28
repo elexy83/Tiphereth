@@ -102,7 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Programmation\C++\Bibliotheque\SFML\SFML-2.6.2-windows-vc17-64-bit\SFML-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;D:\Programmation\C++\Bibliotheque\SFML\SFML-2.6.2-windows-vc17-64-bit\SFML-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,7 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Programmation\C++\Bibliotheque\SFML\SFML-2.6.2-windows-vc17-64-bit\SFML-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;D:\Programmation\C++\Bibliotheque\SFML\SFML-2.6.2-windows-vc17-64-bit\SFML-2.6.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,16 +128,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\cpp\Game.cpp" />
+    <ClCompile Include="src\Core\Game.cpp" />
+    <ClCompile Include="src\cpp\States\ChooseCharacterState.cpp" />
+    <ClCompile Include="src\cpp\Core\Game.cpp" />
     <ClCompile Include="src\cpp\main.cpp" />
-    <ClCompile Include="src\cpp\TitleScreenMenu.cpp" />
-    <ClCompile Include="src\cpp\OptionState.cpp" />
+    <ClCompile Include="src\cpp\States\TitleScreenMenuState.cpp" />
+    <ClCompile Include="src\cpp\States\OptionState.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\States\ChooseCharacterState.cpp" />
+    <ClCompile Include="src\States\OptionState.cpp" />
+    <ClCompile Include="src\States\TitleScreenMenuState.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\header\Game.hpp" />
-    <ClInclude Include="src\header\TitleScreenMenu.hpp" />
-    <ClInclude Include="src\header\OptionState.hpp" />
-    <ClInclude Include="src\header\State.hpp" />
+    <ClInclude Include="include\Core\Game.hpp" />
+    <ClInclude Include="include\States\ChooseCharacterState.hpp" />
+    <ClInclude Include="include\States\OptionState.hpp" />
+    <ClInclude Include="include\States\State.hpp" />
+    <ClInclude Include="include\States\TitleScreenMenuState.hpp" />
+    <ClInclude Include="src\include\States\ChooseCharacterState.hpp" />
+    <ClInclude Include="src\include\Core\Game.hpp" />
+    <ClInclude Include="src\include\States\TitleScreenMenuState.hpp" />
+    <ClInclude Include="src\include\States\OptionState.hpp" />
+    <ClInclude Include="src\include\States\State.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
@@ -153,6 +165,9 @@
     <None Include="sfml-system-d-2.dll" />
     <None Include="sfml-window-2.dll" />
     <None Include="sfml-window-d-2.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\french_gekota.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

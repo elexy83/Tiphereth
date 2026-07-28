@@ -1,5 +1,5 @@
 #include <SFML/Graphics.hpp>
-#include "../header/Game.hpp"
+#include "Core/Game.hpp"
 
 int main()
 {
@@ -9,4 +9,5 @@ int main()
     game.run();
 
     return 0;
+
 }

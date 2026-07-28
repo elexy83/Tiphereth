@@ -1,13 +1,8 @@
 #pragma once
 #include "State.hpp"
-#include "Game.hpp"
 
-
-class Game;
-
-class TitleScreenMenu : public State {
+class TitleScreenMenuState : public State {
 private:
-    Game* game;
 
     sf::Text titleText;
     sf::Font titleFont;
@@ -21,10 +16,10 @@ private:
 
 public:
     // Constructor
-    TitleScreenMenu(Game* game);
+    TitleScreenMenuState();
 
     // Init
-    void initGame(Game* game);
+
     void initFont();
     void initTitle();
     void initStartText();

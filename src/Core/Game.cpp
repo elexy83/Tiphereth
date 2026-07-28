@@ -1,5 +1,5 @@
-#include "../header/Game.hpp"
-#include "../header/TitleScreenMenu.hpp"
+#include "Core/Game.hpp"
+#include "States/TitleScreenMenuState.hpp"
 
 Game::Game()
 {
@@ -27,7 +27,7 @@ void Game::initView()
 
 void Game::initState()
 {
-    this->pushState(std::make_unique<TitleScreenMenu>(this));
+    this->pushState(std::make_unique<TitleScreenMenuState>(this));
 }
 
 void Game::pushState(std::unique_ptr<State> state)

@@ -1,5 +1,5 @@
-#include "../header/OptionState.hpp"
-#include "../header/Game.hpp"
+#include "States/OptionState.hpp"
+#include "Core/Game.hpp"
 #include <iostream>
 
 
@@ -53,6 +53,7 @@ void OptionState::initText()
 
 }
 
+// Do the input only one time.
 void OptionState::handleEvent(sf::Event event)
 {
 	if (event.type == sf::Event::KeyPressed)
@@ -74,7 +75,6 @@ void OptionState::handleEvent(sf::Event event)
 			this->game->setFullScreen(!this->game->getIsFullscreen());
 			this->game->updateWindow();
 			this->updateTexts();
-
 		}
 
 		if (event.key.code == sf::Keyboard::R)
@@ -97,6 +97,8 @@ void OptionState::handleInput()
 
 }
 
+
+//Do the input or whatever at each frames.
 void OptionState::update(float deltaTime)
 {
 
