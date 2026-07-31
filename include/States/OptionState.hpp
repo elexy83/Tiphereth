@@ -17,7 +17,7 @@ private:
 
 public:
 
-	OptionState(Game* game);
+	OptionState(Game* game, Context context);
 
 	void initGame(Game* game);
 	void initFont();

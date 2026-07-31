@@ -16,7 +16,7 @@ private:
 
 public:
     // Constructor
-    TitleScreenMenuState();
+    TitleScreenMenuState(Context context);
 
     // Init
 

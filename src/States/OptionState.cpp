@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-OptionState::OptionState(Game* game)
+OptionState::OptionState(Game* game, Context context) : State(context)
 {
 	this->initGame(game);
 	this->initFont();
@@ -94,7 +94,6 @@ void OptionState::handleEvent(sf::Event event)
 
 void OptionState::handleInput()
 {
-
 }
 
 

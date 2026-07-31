@@ -5,6 +5,7 @@ Game::Game()
 {
     this->initWindow();
     this->initView();
+    this->initContext();
     this->initState();
 }
 
@@ -27,7 +28,13 @@ void Game::initView()
 
 void Game::initState()
 {
-    this->pushState(std::make_unique<TitleScreenMenuState>(this));
+    this->pushState(std::make_unique<TitleScreenMenuState>(this->context));
+}
+
+void Game::initContext()
+{
+    this->context.window = &this->window;
+    this->context.game = this;
 }
 
 void Game::pushState(std::unique_ptr<State> state)

@@ -3,7 +3,7 @@
 #include "States/OptionState.hpp"
 #include <iostream>
 
-TitleScreenMenuState::TitleScreenMenuState()
+TitleScreenMenuState::TitleScreenMenuState(Context context) : State(context)
 {
 	this->initFont();
 	this->initTitle();
@@ -64,9 +64,8 @@ void TitleScreenMenuState::initBackground()
 	*/
 }
 
-void TitleScreenMenuStatehandleInput()
+void TitleScreenMenuState::handleInput()
 {
-
 }
 
 // Do the input only one time.

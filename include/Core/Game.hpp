@@ -3,6 +3,7 @@
 #include <memory>
 #include <stack>
 #include "States/State.hpp"
+#include "Core/Context.hpp"
 #include <vector>
 
 class State;
@@ -21,6 +22,8 @@ private:
     int currentVideoModeIndex;
     bool isInGame = false;
 
+    Context context;
+
 public:
     Game();
 
@@ -28,6 +31,7 @@ public:
     void initWindow();
     void initView();
     void initState();
+    void initContext();
 
     void run();
 

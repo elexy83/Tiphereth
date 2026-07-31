@@ -129,27 +129,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Game.cpp" />
-    <ClCompile Include="src\cpp\States\ChooseCharacterState.cpp" />
-    <ClCompile Include="src\cpp\Core\Game.cpp" />
-    <ClCompile Include="src\cpp\main.cpp" />
-    <ClCompile Include="src\cpp\States\TitleScreenMenuState.cpp" />
-    <ClCompile Include="src\cpp\States\OptionState.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\States\ChooseCharacterState.cpp" />
     <ClCompile Include="src\States\OptionState.cpp" />
     <ClCompile Include="src\States\TitleScreenMenuState.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Core\Context.hpp" />
     <ClInclude Include="include\Core\Game.hpp" />
     <ClInclude Include="include\States\ChooseCharacterState.hpp" />
     <ClInclude Include="include\States\OptionState.hpp" />
     <ClInclude Include="include\States\State.hpp" />
     <ClInclude Include="include\States\TitleScreenMenuState.hpp" />
-    <ClInclude Include="src\include\States\ChooseCharacterState.hpp" />
-    <ClInclude Include="src\include\Core\Game.hpp" />
-    <ClInclude Include="src\include\States\TitleScreenMenuState.hpp" />
-    <ClInclude Include="src\include\States\OptionState.hpp" />
-    <ClInclude Include="src\include\States\State.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
