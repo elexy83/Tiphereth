@@ -7,8 +7,6 @@ class Game;
 class OptionState : public State {
 
 private:
-
-	Game* game;
 	sf::Font font;
 	sf::Text textRes;
 	sf::Text textFull;
@@ -17,13 +15,12 @@ private:
 
 public:
 
-	OptionState(Game* game, Context context);
+	OptionState(Context context);
 
-	void initGame(Game* game);
 	void initFont();
 	void initText();
 
-	void handleEvent(sf::Event event) override;
+	void handleEvent(const sf::Event& event) override;
 	void handleInput() override;
 	void update(float deltaTime) override;
 	void draw(sf::RenderWindow& window) override;

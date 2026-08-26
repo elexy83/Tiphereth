@@ -1,6 +1,6 @@
 #include "States/TitleScreenMenuState.hpp"
 #include "Core/Game.hpp"
-#include "States/OptionState.hpp"
+#include "States/StateIdentifiers.hpp"
 #include <iostream>
 
 TitleScreenMenuState::TitleScreenMenuState(Context context) : State(context)
@@ -14,15 +14,12 @@ TitleScreenMenuState::TitleScreenMenuState(Context context) : State(context)
 
 void TitleScreenMenuState::initFont()
 {
-	if (!this->titleFont.loadFromFile("assets/fonts/Orbitron/static/Orbitron-Regular.ttf"))
-	{
-		std::cout << "Font not load in TitleScreenMenu" << std::endl;
-	}
+	this->context.fonts->load(Fonts::ID::Title, "assets/fonts/Orbitron/static/Orbitron-Regular.ttf");
 }
 
 void TitleScreenMenuState::initTitle()
 {
-	this->titleText.setFont(this->titleFont);
+	this->titleText.setFont(this->context.fonts->get(Fonts::ID::Title));
 	this->titleText.setString("Tiphereth");
 	this->titleText.setCharacterSize(100);
 	this->titleText.setFillColor(sf::Color::White);
@@ -36,7 +33,7 @@ void TitleScreenMenuState::initTitle()
 
 void TitleScreenMenuState::initStartText()
 {
-	this->startText.setFont(this->titleFont);
+	this->startText.setFont(this->context.fonts->get(Fonts::ID::Title));
 	this->startText.setString("Jouer");
 	this->startText.setCharacterSize(50);
 	sf::FloatRect textRect = this->startText.getLocalBounds();
@@ -46,7 +43,7 @@ void TitleScreenMenuState::initStartText()
 
 void TitleScreenMenuState::initOptionText()
 {
-	this->optionText.setFont(this->titleFont);
+	this->optionText.setFont(this->context.fonts->get(Fonts::ID::Title));
 	this->optionText.setString("[O] Option");
 	this->optionText.setCharacterSize(30);
 	sf::FloatRect textRect = this->optionText.getLocalBounds();
@@ -64,12 +61,13 @@ void TitleScreenMenuState::initBackground()
 	*/
 }
 
+
 void TitleScreenMenuState::handleInput()
 {
 }
 
 // Do the input only one time.
-void TitleScreenMenuState::handleEvent(sf::Event event)
+void TitleScreenMenuState::handleEvent(const sf::Event& event)
 {
 	// Check if the event (so only one time) is a key pressed
 	if (event.type == sf::Event::KeyPressed)
@@ -85,12 +83,12 @@ void TitleScreenMenuState::handleEvent(sf::Event event)
 		// Enter -> start game
 		if (event.key.code == sf::Keyboard::Enter)
 		{
-			//this->game->pushState(std::make_unique<GameState>(this->game));
+			
 		}
 
 		if (event.key.code == sf::Keyboard::O)
 		{
-			//this->game->pushState(std::make_unique<OptionState>(this->game));
+			//this->context.game->changeState(States::ID::Option);
 		}
 
 	}

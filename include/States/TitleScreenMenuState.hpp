@@ -28,7 +28,7 @@ public:
 
 
     void handleInput() override;
-    void handleEvent(sf::Event event) override;
+    void handleEvent(const sf::Event& event) override;
     void update(float deltaTime) override;
     void draw(sf::RenderWindow& window) override;
 };

@@ -1,6 +1,14 @@
 #include "Core/Game.hpp"
 #include "States/TitleScreenMenuState.hpp"
+#include "States/OptionState.hpp"
+#include "States/ChooseCharacterState.hpp"
 
+/*
+Game Constuctor Method.
+The Class Game serves as the core of the game. 
+It allows the creation of the basic and essential elements as well as the game loop. 
+It is also responsible for managing State changes.
+*/
 Game::Game()
 {
     this->initWindow();
@@ -9,6 +17,9 @@ Game::Game()
     this->initState();
 }
 
+/*
+* Window creation.
+*/
 void Game::initWindow()
 {
     this->videoModes = sf::VideoMode::getFullscreenModes();
@@ -20,6 +31,10 @@ void Game::initWindow()
     this->updateWindow();
 }
 
+
+/*
+* Création de la vue.
+*/
 void Game::initView()
 {
     this->view = sf::View(sf::FloatRect(0.f, 0.f, VIEW_WIDTH, VIEW_HEIGHT));
@@ -28,18 +43,20 @@ void Game::initView()
 
 void Game::initState()
 {
-    this->pushState(std::make_unique<TitleScreenMenuState>(this->context));
+    this->pushState(States::ID::TitleScreen);
 }
 
 void Game::initContext()
 {
     this->context.window = &this->window;
     this->context.game = this;
+    this->context.textures = &this->textures;
+    this->context.fonts = &this->fonts;
 }
 
-void Game::pushState(std::unique_ptr<State> state)
+void Game::pushState(States::ID stateID)
 {
-    this->states.push(std::move(state));
+    this->states.push(this->createState(stateID));
 }
 
 void Game::popState()
@@ -47,6 +64,27 @@ void Game::popState()
     if (!this->states.empty())
     {
         this->states.pop();
+    }
+}
+
+std::unique_ptr<State> Game::createState(States::ID stateID)
+{
+    switch (stateID)
+    {
+    case States::ID::TitleScreen:
+        return std::make_unique<TitleScreenMenuState>(this->context);
+
+    case States::ID::Option:
+        return std::make_unique<OptionState>(this->context);
+
+    case States::ID::ChooseCharacter:
+        return std::make_unique<ChooseCharacterState>(this->context);
+
+    // case States::ID::Game:
+    //     return std::make_unique<GameState>(this->context);
+
+    default:
+        return nullptr;
     }
 }
 
@@ -118,13 +156,13 @@ void Game::nextVideoMode()
     this->resHeight = this->videoModes[this->currentVideoModeIndex].height;
 }
 
-void Game::changeState(std::unique_ptr<State> state)
+void Game::changeState(States::ID stateID)
 {
     if (!this->states.empty())
     {
         this->states.pop();
     }
-    this->states.push(std::move(state));
+    this->states.push(this->createState(stateID));
 }
 
 void Game::updateWindow()
@@ -136,12 +174,18 @@ void Game::updateWindow()
     this->window.setView(this->view);
 }
 
+
+/*
+* Game loop method.
+*/
 void Game::run()
 {
 
     sf::Clock clock;
     while (this->window.isOpen())
     {
+
+        // Calcule du deltaTime
         this->deltaTime = clock.restart().asSeconds();
 
         sf::Event event;

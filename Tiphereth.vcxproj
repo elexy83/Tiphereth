@@ -137,9 +137,11 @@
   <ItemGroup>
     <ClInclude Include="include\Core\Context.hpp" />
     <ClInclude Include="include\Core\Game.hpp" />
+    <ClInclude Include="include\Managers\ResourceManager.hpp" />
     <ClInclude Include="include\States\ChooseCharacterState.hpp" />
     <ClInclude Include="include\States\OptionState.hpp" />
     <ClInclude Include="include\States\State.hpp" />
+    <ClInclude Include="include\States\StateIdentifiers.hpp" />
     <ClInclude Include="include\States\TitleScreenMenuState.hpp" />
   </ItemGroup>
   <ItemGroup>

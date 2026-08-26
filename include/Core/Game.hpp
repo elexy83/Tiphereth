@@ -4,9 +4,11 @@
 #include <stack>
 #include "States/State.hpp"
 #include "Core/Context.hpp"
+#include "States/StateIdentifiers.hpp"
 #include <vector>
 
 class State;
+
 class Game {
 private:
     sf::RenderWindow window;
@@ -22,7 +24,12 @@ private:
     int currentVideoModeIndex;
     bool isInGame = false;
 
+    TextureManager textures;
+    FontManager fonts;
+
     Context context;
+
+    std::unique_ptr<State> createState(States::ID stateID);
 
 public:
     Game();
@@ -35,8 +42,9 @@ public:
 
     void run();
 
-    void pushState(std::unique_ptr<State> state);
-    void changeState(std::unique_ptr<State> state);
+    // States Methodes
+    void pushState(States::ID stateID);
+    void changeState(States::ID stateID);
     void updateWindow();
     void popState();
 
