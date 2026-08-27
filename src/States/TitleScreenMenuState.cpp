@@ -3,18 +3,14 @@
 #include "States/StateIdentifiers.hpp"
 #include <iostream>
 
-TitleScreenMenuState::TitleScreenMenuState(Context context) : State(context)
+TitleScreenMenuState::TitleScreenMenuState(Context context) 
+	: State(context)
+	, playButton(context.fonts->get(Fonts::ID::Title))
+	, optionButton(context.fonts->get(Fonts::ID::Title))
 {
-	this->initFont();
 	this->initTitle();
-	this->initStartText();
-	this->initOptionText();
+	this->initButtons();
 	this->initBackground();
-}
-
-void TitleScreenMenuState::initFont()
-{
-	this->context.fonts->load(Fonts::ID::Title, "assets/fonts/Orbitron/static/Orbitron-Regular.ttf");
 }
 
 void TitleScreenMenuState::initTitle()
@@ -31,34 +27,31 @@ void TitleScreenMenuState::initTitle()
 	this->titleText.setPosition(1920.f / 2.0f, 1080.f / 3.0f);
 }
 
-void TitleScreenMenuState::initStartText()
+void TitleScreenMenuState::initButtons()
 {
-	this->startText.setFont(this->context.fonts->get(Fonts::ID::Title));
-	this->startText.setString("Jouer");
-	this->startText.setCharacterSize(50);
-	sf::FloatRect textRect = this->startText.getLocalBounds();
-	this->startText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-	this->startText.setPosition(1920.f / 2.0f, 1080.f / 2.0f);
-}
+	// Play button
+	playButton.setText("Jouer");
+	playButton.setPosition(1920.f / 2.0f, 1080.f / 2.0f);
 
-void TitleScreenMenuState::initOptionText()
-{
-	this->optionText.setFont(this->context.fonts->get(Fonts::ID::Title));
-	this->optionText.setString("[O] Option");
-	this->optionText.setCharacterSize(30);
-	sf::FloatRect textRect = this->optionText.getLocalBounds();
-	this->optionText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-	this->optionText.setPosition(1920.f / 2.0f, 1080.f / 1.5f);
+	playButton.setCallback([this]()
+	{
+		this->context.game->changeState(States::ID::ChooseCharacter);
+	});
+
+	// Option button
+	optionButton.setText("Options");
+	optionButton.setPosition(1920.f / 2.0f, 1080.f / 1.5f);
+
+	optionButton.setCallback([this]()
+	{
+		// Using pushState instead of changeState to be able to get back to the TitleScreenMenu
+		this->context.game->pushState(States::ID::Option);
+	});
 }
 
 void TitleScreenMenuState::initBackground()
 {
-	/* if (!this->backgroundTexture.loadFromFile("assets/textures/menu_bg.png"))
-	{
-		std::cout << "ERREUR: Impossible de charger menu_bg.png" << std::endl;
-	}
-	this->backgroundSprite.setTexture(this->backgroundTexture);
-	*/
+
 }
 
 
@@ -66,44 +59,30 @@ void TitleScreenMenuState::handleInput()
 {
 }
 
-// Do the input only one time.
 void TitleScreenMenuState::handleEvent(const sf::Event& event)
 {
-	// Check if the event (so only one time) is a key pressed
+	playButton.handleEvent(event, *this->context.window);
+	optionButton.handleEvent(event, *this->context.window);
+
 	if (event.type == sf::Event::KeyPressed)
 	{
-		// Checking which key is pressed
-
-		// Escape -> close game
 		if (event.key.code == sf::Keyboard::Escape)
 		{
-			//this->game->popState();
-		}
-
-		// Enter -> start game
-		if (event.key.code == sf::Keyboard::Enter)
-		{
-			
-		}
-
-		if (event.key.code == sf::Keyboard::O)
-		{
-			//this->context.game->changeState(States::ID::Option);
+			this->context.game->popState();
 		}
 
 	}
 }
 
-//Do the input or whatever at each frames.
 void TitleScreenMenuState::update(float deltaTime)
 {
-
+	playButton.update(*this->context.window);
+	optionButton.update(*this->context.window);
 }
 
 void TitleScreenMenuState::draw(sf::RenderWindow& window)
 {
-	// window.draw(this->backgroundSprite);
 	window.draw(this->titleText);
-	window.draw(this->startText);
-	window.draw(this->optionText);
+	window.draw(this->playButton);
+	window.draw(this->optionButton);
 }

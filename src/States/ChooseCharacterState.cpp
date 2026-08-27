@@ -13,12 +13,10 @@ void ChooseCharacterState::handleInput()
 {
 }
 
-// Do the input only one time.
 void ChooseCharacterState::handleEvent(const sf::Event& event)
 {
 }
 
-//Do the input or whatever at each frames.
 void ChooseCharacterState::update(float deltaTime)
 {
 

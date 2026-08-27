@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Game.cpp" />
+    <ClCompile Include="src\GUI\Button.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\States\ChooseCharacterState.cpp" />
     <ClCompile Include="src\States\OptionState.cpp" />
@@ -137,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="include\Core\Context.hpp" />
     <ClInclude Include="include\Core\Game.hpp" />
+    <ClInclude Include="include\GUI\Button.hpp" />
     <ClInclude Include="include\Managers\ResourceManager.hpp" />
     <ClInclude Include="include\States\ChooseCharacterState.hpp" />
     <ClInclude Include="include\States\OptionState.hpp" />

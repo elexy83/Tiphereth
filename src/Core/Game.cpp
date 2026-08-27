@@ -2,13 +2,8 @@
 #include "States/TitleScreenMenuState.hpp"
 #include "States/OptionState.hpp"
 #include "States/ChooseCharacterState.hpp"
+#include <iostream>
 
-/*
-Game Constuctor Method.
-The Class Game serves as the core of the game. 
-It allows the creation of the basic and essential elements as well as the game loop. 
-It is also responsible for managing State changes.
-*/
 Game::Game()
 {
     this->initWindow();
@@ -17,9 +12,7 @@ Game::Game()
     this->initState();
 }
 
-/*
-* Window creation.
-*/
+
 void Game::initWindow()
 {
     this->videoModes = sf::VideoMode::getFullscreenModes();
@@ -32,9 +25,6 @@ void Game::initWindow()
 }
 
 
-/*
-* Création de la vue.
-*/
 void Game::initView()
 {
     this->view = sf::View(sf::FloatRect(0.f, 0.f, VIEW_WIDTH, VIEW_HEIGHT));
@@ -52,6 +42,13 @@ void Game::initContext()
     this->context.game = this;
     this->context.textures = &this->textures;
     this->context.fonts = &this->fonts;
+
+    try {
+        this->context.fonts->load(Fonts::ID::Title, "assets/fonts/Orbitron/static/Orbitron-Regular.ttf");
+    }
+    catch (std::exception& e) {
+        std::cerr << "ERREUR CRITIQUE : " << e.what() << std::endl;
+    }
 }
 
 void Game::pushState(States::ID stateID)
@@ -156,6 +153,8 @@ void Game::nextVideoMode()
     this->resHeight = this->videoModes[this->currentVideoModeIndex].height;
 }
 
+
+
 void Game::changeState(States::ID stateID)
 {
     if (!this->states.empty())
@@ -175,9 +174,6 @@ void Game::updateWindow()
 }
 
 
-/*
-* Game loop method.
-*/
 void Game::run()
 {
 
@@ -185,26 +181,23 @@ void Game::run()
     while (this->window.isOpen())
     {
 
-        // Calcule du deltaTime
-        this->deltaTime = clock.restart().asSeconds();
+        this->deltaTime = clock.restart().asSeconds(); // DeltaTime Calculation
 
         sf::Event event;
         while (this->window.pollEvent(event))
         {
-            // if the window is closed
-            if (event.type == sf::Event::Closed)
+           
+            if (event.type == sf::Event::Closed)  // If the window is closed
             {
                 this->window.close();
             }
-
-            // Give to the top state the events
-            if (!this->states.empty())
+            
+            if (!this->states.empty()) // Give to the top state the events
             {
                 this->states.top()->handleEvent(event);
             }
 
-            // Recaculate the viewport
-            if (event.type == sf::Event::Resized)
+            if (event.type == sf::Event::Resized) // Recaculate the viewport
             {
                 // Comparating viewport with the window
                 float windowRatio = static_cast<float>(event.size.width) / static_cast<float>(event.size.height);
@@ -215,13 +208,13 @@ void Game::run()
                 float posX = 0.f;
                 float posY = 0.f;
 
-                // if it's too wide (adding black stripes on the edges)
+                // If it's too wide (adding black stripes on the edges)
                 if (windowRatio > viewRatio)
                 {
                     sizeX = viewRatio / windowRatio;
                     posX = (1.f - sizeX) / 2.f;
                 }
-                // if it's too high (adding black stripes on the top and bottom)
+                // If it's too high (adding black stripes on the top and bottom)
                 else
                 {
                     sizeY = windowRatio / viewRatio;
