@@ -30,7 +30,7 @@ void TitleScreenMenuState::initTitle()
 void TitleScreenMenuState::initButtons()
 {
 	// Play button
-	playButton.setText("Jouer");
+	playButton.setText(this->context.i18n->get("menu.play"));
 	playButton.setPosition(1920.f / 2.0f, 1080.f / 2.0f);
 
 	playButton.setCallback([this]()
@@ -39,7 +39,7 @@ void TitleScreenMenuState::initButtons()
 	});
 
 	// Option button
-	optionButton.setText("Options");
+	optionButton.setText(this->context.i18n->get("menu.options"));
 	optionButton.setPosition(1920.f / 2.0f, 1080.f / 1.5f);
 
 	optionButton.setCallback([this]()

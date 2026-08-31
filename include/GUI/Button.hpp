@@ -42,7 +42,7 @@ namespace GUI
          *
          * @param text The string content to display.
          */
-        void setText(const std::string& text);
+        void setText(const sf::String& text);
 
         /**
          * @brief Sets the width and height dimensions of the button shape.

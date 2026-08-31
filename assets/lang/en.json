@@ -1,0 +1,16 @@
+{
+  "menu.play": "Play",
+  "menu.options": "Settings",
+  "menu.quit": "Quit Game",
+
+  "option.title": "SETTINGS",
+  "option.res": "Resolution :",
+  "option.fs": "Fullscreen :",
+  "option.apply": "Apply",
+  "option.back": "Back to menu",
+  "option.yes": "YES",
+  "option.no": "NO",
+  "option.lang": "Language :",
+  "option.fps": "FPS Max :",
+  "option.unlimited": "Unlimited"
+}

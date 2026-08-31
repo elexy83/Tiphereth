@@ -61,8 +61,13 @@ private:
     /// Central font repository preventing redundant disk loads.
     FontManager fonts;
 
+    /// Central localization repository for translated text strings.
+    LocalizationManager i18n;
+
     /// Shared contextual toolkit passed down to all active states.
     Context context;
+
+    unsigned int maxFPS = 60;
 
 private:
     /**
@@ -200,4 +205,8 @@ public:
      * @brief Cycles to the next available video mode configuration.
      */
     void nextVideoMode();
+
+    void setMaxFPS(unsigned int fps);
+
+    const unsigned int getMaxFPS();
 };

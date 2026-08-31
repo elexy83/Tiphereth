@@ -22,7 +22,7 @@ namespace GUI
         m_callback = callback;
     }
 
-    void Button::setText(const std::string& text)
+    void Button::setText(const sf::String& text)
     {
         m_text.setString(text);
         centerText();

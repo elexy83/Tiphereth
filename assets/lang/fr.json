@@ -1,0 +1,16 @@
+{
+  "menu.play": "Jouer",
+  "menu.options": "Options",
+  "menu.quit": "Quitter le jeu",
+
+  "option.title": "OPTIONS",
+  "option.res": "Resolution :",
+  "option.fs": "Plein Ecran :",
+  "option.apply": "Appliquer",
+  "option.back": "Retour au menu",
+  "option.yes": "OUI",
+  "option.no": "NON",
+  "option.lang": "Langue :",
+  "option.fps": "FPS Max :",
+  "option.unlimited": "Illimité"
+}

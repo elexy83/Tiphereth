@@ -26,6 +26,12 @@ private:
     /// Dynamic text displaying the currently selected resolution value.
     sf::Text resValueText;
 
+    // Static label text for the language setting row.
+    sf::Text langLabel;
+
+    /// Dynamic text displaying the currently selected language value.
+    sf::Text langValueText;
+
     /// Interactive button to apply pending configuration modifications.
     GUI::Button applyButton;
 
@@ -41,11 +47,20 @@ private:
     /// Increment button to cycle forward through available video resolutions.
     GUI::Button resNextButton;
 
+    /// Decrement button to cycle backward through available languages.
+    GUI::Button langPrevButton;
+
+    /// Increment button to cycle forward through available languages.
+    GUI::Button langNextButton;
+
     /// Toggle button to switch between windowed and fullscreen display modes.
     GUI::Button fsToggleBtn;
 
     /// Buffer tracking the selected video mode index before confirmation.
     int pendingVideoModeIndex;
+
+    /// Buffer tracking the selected language index before confirmation.
+    int pendingLanguageIndex;
 
     /// Buffer tracking the fullscreen toggle state before confirmation.
     bool pendingFullscreen;
@@ -55,6 +70,20 @@ private:
 
     /// Safe-exit security flag requesting application closure on the next frame update.
     bool requestQuit;
+
+    std::vector<std::string> availableLanguages = { "fr", "en" };
+
+    sf::Text fpsLabel;
+
+    sf::Text fpsValueText;
+
+    GUI::Button fpsPrevButton;
+
+    GUI::Button fpsNextButton;
+
+    std::vector<unsigned int> availableFPS = { 30, 60, 120, 144, 240, 0 }; // 0 = unlimitted
+
+    int pendingFpsIndex;
 
 private:
     /**

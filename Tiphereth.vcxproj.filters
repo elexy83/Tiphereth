@@ -62,6 +62,12 @@
     <ClInclude Include="include\GUI\Button.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="include\Managers\LocalizationManager.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Managers\InputManager.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
@@ -82,5 +88,13 @@
     <Image Include="assets\french_gekota.ico">
       <Filter>Fichiers de ressources</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="assets\lang\en.json">
+      <Filter>Fichiers sources</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="assets\lang\fr.json">
+      <Filter>Fichiers sources</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

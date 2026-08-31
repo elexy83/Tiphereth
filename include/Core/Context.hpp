@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "Managers/ResourceManager.hpp"
+#include "Managers/LocalizationManager.hpp"
 
 class Game;
 
@@ -26,6 +27,10 @@ struct Context {
     /// Pointer to the font asset manager repository.
     FontManager* fonts;
 
+
+    /// Pointer to the localization manager for text translations.
+    LocalizationManager* i18n;
+
     /**
      * @brief Constructs a new Context toolbox with optional initial pointers.
      *
@@ -33,12 +38,13 @@ struct Context {
      * @param g Pointer to the main Game engine instance.
      * @param tex Pointer to the TextureManager repository.
      * @param f Pointer to the FontManager repository.
+     * @param i Pointer to the LocalizationManager repository.
      */
     Context(
         sf::RenderWindow* win = nullptr,
         Game* g = nullptr,
         TextureManager* tex = nullptr,
-        FontManager* f = nullptr
-    ) : window(win), game(g), textures(tex), fonts(f) {
-    }
+        FontManager* f = nullptr,
+        LocalizationManager* i = nullptr
+    ) : window(win), game(g), textures(tex), fonts(f), i18n(i) {}
 };

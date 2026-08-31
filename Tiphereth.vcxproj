@@ -128,6 +128,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="assets\lang\en.json">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="assets\lang\fr.json">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <ClCompile Include="src\Core\Game.cpp" />
     <ClCompile Include="src\GUI\Button.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -139,6 +145,8 @@
     <ClInclude Include="include\Core\Context.hpp" />
     <ClInclude Include="include\Core\Game.hpp" />
     <ClInclude Include="include\GUI\Button.hpp" />
+    <ClInclude Include="include\Managers\InputManager.hpp" />
+    <ClInclude Include="include\Managers\LocalizationManager.hpp" />
     <ClInclude Include="include\Managers\ResourceManager.hpp" />
     <ClInclude Include="include\States\ChooseCharacterState.hpp" />
     <ClInclude Include="include\States\OptionState.hpp" />
