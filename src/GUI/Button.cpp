@@ -28,6 +28,12 @@ namespace GUI
         centerText();
     }
 
+    void Button::setCharacterSize(unsigned int size)
+    {
+        m_text.setCharacterSize(size);
+        centerText();
+    }
+
     void Button::setSize(sf::Vector2f size)
     {
         m_shape.setSize(size);

@@ -3,10 +3,11 @@
 #include "States/StateIdentifiers.hpp"
 #include <iostream>
 
-TitleScreenMenuState::TitleScreenMenuState(Context context) 
+TitleScreenMenuState::TitleScreenMenuState(Context context)
 	: State(context)
 	, playButton(context.fonts->get(Fonts::ID::Title))
 	, optionButton(context.fonts->get(Fonts::ID::Title))
+	, quitButton(context.fonts->get(Fonts::ID::Title))
 {
 	this->initTitle();
 	this->initButtons();
@@ -29,24 +30,30 @@ void TitleScreenMenuState::initTitle()
 
 void TitleScreenMenuState::initButtons()
 {
+
 	// Play button
 	playButton.setText(this->context.i18n->get("menu.play"));
 	playButton.setPosition(1920.f / 2.0f, 1080.f / 2.0f);
-
 	playButton.setCallback([this]()
-	{
-		this->context.game->changeState(States::ID::ChooseCharacter);
-	});
+		{
+			this->pendingAction = PendingAction::Play;
+		});
 
 	// Option button
 	optionButton.setText(this->context.i18n->get("menu.options"));
 	optionButton.setPosition(1920.f / 2.0f, 1080.f / 1.5f);
-
 	optionButton.setCallback([this]()
-	{
-		// Using pushState instead of changeState to be able to get back to the TitleScreenMenu
-		this->context.game->pushState(States::ID::Option);
-	});
+		{
+			this->pendingAction = PendingAction::Options;
+		});
+
+	// Quit button
+	quitButton.setText(this->context.i18n->get("menu.quit"));
+	quitButton.setPosition(1920.f / 2.0f, 1080.f / 1.5f + 180.f);
+	quitButton.setCallback([this]()
+		{
+			this->pendingAction = PendingAction::Quit;
+		});
 }
 
 void TitleScreenMenuState::initBackground()
@@ -63,21 +70,45 @@ void TitleScreenMenuState::handleEvent(const sf::Event& event)
 {
 	playButton.handleEvent(event, *this->context.window);
 	optionButton.handleEvent(event, *this->context.window);
+	quitButton.handleEvent(event, *this->context.window);
 
-	if (event.type == sf::Event::KeyPressed)
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 	{
-		if (event.key.code == sf::Keyboard::Escape)
-		{
-			this->context.game->popState();
-		}
-
+		this->pendingAction = PendingAction::Quit;
 	}
 }
 
 void TitleScreenMenuState::update(float deltaTime)
 {
+	if (pendingAction != PendingAction::None)
+	{
+		const PendingAction action = pendingAction;
+		pendingAction = PendingAction::None;
+
+		switch (action)
+		{
+		case PendingAction::Play:
+			this->context.game->changeState(States::ID::ChooseCharacter);
+			break;
+
+		case PendingAction::Options:
+			this->context.game->pushState(States::ID::Option);
+			break;
+
+		case PendingAction::Quit:
+			this->context.window->close();
+			break;
+
+		default:
+			break;
+		}
+
+		return;
+	}
+
 	playButton.update(*this->context.window);
 	optionButton.update(*this->context.window);
+	quitButton.update(*this->context.window);
 }
 
 void TitleScreenMenuState::draw(sf::RenderWindow& window)
@@ -85,4 +116,5 @@ void TitleScreenMenuState::draw(sf::RenderWindow& window)
 	window.draw(this->titleText);
 	window.draw(this->playButton);
 	window.draw(this->optionButton);
+	window.draw(this->quitButton);
 }

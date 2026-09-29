@@ -6,6 +6,7 @@
 #include "States/State.hpp"
 #include "Core/Context.hpp"
 #include "States/StateIdentifiers.hpp"
+#include "Managers/InputManager.hpp"
 #include <vector>
 
 class State;
@@ -66,6 +67,8 @@ private:
 
     /// Shared contextual toolkit passed down to all active states.
     Context context;
+
+    InputManager inputManager;
 
     unsigned int maxFPS = 60;
 
@@ -209,4 +212,8 @@ public:
     void setMaxFPS(unsigned int fps);
 
     const unsigned int getMaxFPS();
+
+    void loadSettings();
+
+    void saveSettings();
 };

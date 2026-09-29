@@ -83,6 +83,8 @@
     <None Include="sfml-system-d-2.dll" />
     <None Include="sfml-window-2.dll" />
     <None Include="sfml-window-d-2.dll" />
+    <None Include="assets\config\keybinds.json" />
+    <None Include="assets\config\settings.json" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\french_gekota.ico">

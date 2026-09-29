@@ -44,6 +44,8 @@ namespace GUI
          */
         void setText(const sf::String& text);
 
+        void setCharacterSize(unsigned int size);
+
         /**
          * @brief Sets the width and height dimensions of the button shape.
          *

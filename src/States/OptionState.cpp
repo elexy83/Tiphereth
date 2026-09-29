@@ -1,28 +1,96 @@
 #include "States/OptionState.hpp"
 #include "Core/Game.hpp"
 #include "States/StateIdentifiers.hpp"
-#include <iostream>
+#include <algorithm>
+#include <functional>
+
+namespace
+{
+	// Virtual resolution used by the whole UI
+	constexpr float ScreenW = 1920.f;
+	constexpr float ScreenH = 1080.f;
+
+	// Video tab layout
+	constexpr float LabelX = 450.f;
+	constexpr float ValueX = 1230.f;
+	constexpr float ArrowOffset = 170.f;
+	constexpr float VideoRowY[4] = { 340.f, 450.f, 560.f, 670.f };
+
+	// Controls tab layout
+	constexpr float GroupSelectorY = 320.f;
+	constexpr float HeaderY = 385.f;
+	constexpr float RowsStartY = 440.f;
+	constexpr float RowStep = 58.f;
+	constexpr float Key1X = 1130.f;
+	constexpr float Key2X = 1360.f;
+	constexpr float ScrollY = 830.f;
+	constexpr float HintY = 870.f;
+
+	// Palette
+	const sf::Color BtnNormal(60, 63, 85);
+	const sf::Color BtnHover(85, 90, 120);
+	const sf::Color BtnListening(200, 140, 40);
+	const sf::Color BtnListeningHover(225, 165, 60);
+	const sf::Color TabActive(80, 110, 190);
+	const sf::Color TabActiveHover(100, 130, 210);
+	const sf::Color Green(50, 150, 50);
+	const sf::Color GreenHover(80, 180, 80);
+	const sf::Color Red(150, 50, 50);
+	const sf::Color RedHover(180, 80, 80);
+	const sf::Color SubtleText(170, 175, 195);
+
+	void styleText(sf::Text& text, const sf::Font& font, unsigned int size, sf::Color color = sf::Color::White)
+	{
+		text.setFont(font);
+		text.setCharacterSize(size);
+		text.setFillColor(color);
+	}
+
+	void placeText(sf::Text& text, const sf::String& str, float x, float y, bool centered)
+	{
+		text.setString(str);
+		const sf::FloatRect b = text.getLocalBounds();
+		text.setOrigin(centered ? b.left + b.width / 2.f : b.left, b.top + b.height / 2.f);
+		text.setPosition(x, y);
+	}
+
+	void setupButton(GUI::Button& button, const sf::String& text, sf::Vector2f size,
+		float x, float y, std::function<void()> callback)
+	{
+		button.setText(text);
+		button.setSize(size);
+		button.setPosition(x, y);
+		button.setCallback(std::move(callback));
+	}
+
+	void setColors(GUI::Button& button, sf::Color normal, sf::Color hover)
+	{
+		button.setNormalColor(normal);
+		button.setHoverColor(hover);
+	}
+}
 
 OptionState::OptionState(Context context)
 	: State(context)
-	, applyButton(context.fonts->get(Fonts::ID::Title))
+	, tabVideoButton(context.fonts->get(Fonts::ID::Title))
+	, tabControlsButton(context.fonts->get(Fonts::ID::Title))
 	, backButton(context.fonts->get(Fonts::ID::Title))
-	, quitButton(context.fonts->get(Fonts::ID::Title))
+	, applyButton(context.fonts->get(Fonts::ID::Title))
+	, resetButton(context.fonts->get(Fonts::ID::Title))
 	, resPrevButton(context.fonts->get(Fonts::ID::Title))
 	, resNextButton(context.fonts->get(Fonts::ID::Title))
+	, fpsPrevButton(context.fonts->get(Fonts::ID::Title))
+	, fpsNextButton(context.fonts->get(Fonts::ID::Title))
 	, fsToggleBtn(context.fonts->get(Fonts::ID::Title))
 	, langPrevButton(context.fonts->get(Fonts::ID::Title))
 	, langNextButton(context.fonts->get(Fonts::ID::Title))
-	, fpsPrevButton(context.fonts->get(Fonts::ID::Title))
-	, fpsNextButton(context.fonts->get(Fonts::ID::Title))
-	, requestPop(false)
-	, requestQuit(false)
+	, groupPrevButton(context.fonts->get(Fonts::ID::Title))
+	, groupNextButton(context.fonts->get(Fonts::ID::Title))
 {
-
 	pendingVideoModeIndex = context.game->getCurrentVideoModeIndex();
 	pendingFullscreen = context.game->getIsFullscreen();
 
-	unsigned int currentFPS = context.game->getMaxFPS();
+	const unsigned int currentFPS = context.game->getMaxFPS();
 	pendingFpsIndex = 1; // 60 by default
 	for (size_t i = 0; i < availableFPS.size(); ++i) {
 		if (availableFPS[i] == currentFPS) {
@@ -32,7 +100,7 @@ OptionState::OptionState(Context context)
 	}
 
 	pendingLanguageIndex = 0; // Default "fr"
-	std::string currentLang = this->context.i18n->getCurrentLanguage();
+	const std::string currentLang = context.i18n->getCurrentLanguage();
 	for (size_t i = 0; i < availableLanguages.size(); ++i) {
 		if (availableLanguages[i] == currentLang) {
 			pendingLanguageIndex = static_cast<int>(i);
@@ -40,291 +108,448 @@ OptionState::OptionState(Context context)
 		}
 	}
 
+	// Backup so "Back" can undo unapplied key changes
+	savedBindings = *context.input;
+
 	this->initUI();
 	this->updateTexts();
+	this->refreshTabStyles();
 }
+
+// ----------------------------------------------------------------------
+// Construction of the UI (positions, callbacks) - done once
+// ----------------------------------------------------------------------
 
 void OptionState::initUI()
 {
 	sf::Font& font = this->context.fonts->get(Fonts::ID::Title);
 
-	// Title
-	titleText.setFont(font);
-	titleText.setString("OPTIONS");
-	titleText.setCharacterSize(70);
-	titleText.setString(this->context.i18n->get("option.title"));
-	sf::FloatRect textRect = titleText.getLocalBounds();
-	titleText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-	titleText.setPosition(1920.f / 2.f, 150.f);
+	// Dimmed background + centered panel
+	overlay.setSize(sf::Vector2f(ScreenW, ScreenH));
+	overlay.setFillColor(sf::Color(0, 0, 0, 170));
 
-	float row1_Y = 320.f; // Resolution
-	float row2_Y = 470.f; // FPS
-	float row3_Y = 620.f; // Fullscreen
-	float row4_Y = 770.f; // Langue
+	panel.setSize(sf::Vector2f(1200.f, 660.f));
+	panel.setPosition(360.f, 240.f);
+	panel.setFillColor(sf::Color(25, 27, 40, 235));
+	panel.setOutlineThickness(2.f);
+	panel.setOutlineColor(sf::Color(90, 95, 130));
 
-	// Resolution
-	resLabel.setFont(font);
-	resLabel.setString(this->context.i18n->get("option.res"));
-	resLabel.setCharacterSize(40);
-	sf::FloatRect resLblRect = resLabel.getLocalBounds();
-	resLabel.setOrigin(resLblRect.left, resLblRect.top + resLblRect.height / 2.f);
-	resLabel.setPosition(500.f, row1_Y);
+	styleText(titleText, font, 60);
 
-	resValueText.setFont(font);
-	resValueText.setCharacterSize(40);
+	// Tabs
+	setupButton(tabVideoButton, "", sf::Vector2f(260.f, 50.f), ScreenW / 2.f - 150.f, 190.f,
+		[this]() { setTab(Tab::Video); });
+	setupButton(tabControlsButton, "", sf::Vector2f(260.f, 50.f), ScreenW / 2.f + 150.f, 190.f,
+		[this]() { setTab(Tab::Controls); });
 
-	resPrevButton.setText("<");
-	resPrevButton.setSize(sf::Vector2f(60.f, 60.f));
-	resPrevButton.setPosition(1300.f - 200.f, row1_Y);
-	resPrevButton.setCallback([this]()
-		{
-			pendingVideoModeIndex--;
-			if (pendingVideoModeIndex < 0) {
-				pendingVideoModeIndex = static_cast<int>(this->context.game->GetVideoModes().size() - 1);
-			}
-			this->updateTexts();
+	// ---------------- Video tab ----------------
+	for (sf::Text* t : { &resLabel, &fpsLabel, &fsLabel, &langLabel })
+		styleText(*t, font, 30);
+	for (sf::Text* t : { &resValueText, &fpsValueText, &langValueText })
+		styleText(*t, font, 30, sf::Color(255, 220, 120));
+
+	const sf::Vector2f arrowSize(50.f, 50.f);
+
+	setupButton(resPrevButton, "<", arrowSize, ValueX - ArrowOffset, VideoRowY[0], [this]() {
+		const int count = static_cast<int>(this->context.game->GetVideoModes().size());
+		if (count == 0) return;
+		pendingVideoModeIndex = (pendingVideoModeIndex - 1 + count) % count;
+		refreshVideoTexts();
+		});
+	setupButton(resNextButton, ">", arrowSize, ValueX + ArrowOffset, VideoRowY[0], [this]() {
+		const int count = static_cast<int>(this->context.game->GetVideoModes().size());
+		if (count == 0) return;
+		pendingVideoModeIndex = (pendingVideoModeIndex + 1) % count;
+		refreshVideoTexts();
 		});
 
-	resNextButton.setText(">");
-	resNextButton.setSize(sf::Vector2f(60.f, 60.f));
-	resNextButton.setPosition(1300.f + 200.f, row1_Y);
-	resNextButton.setCallback([this]()
-		{
-			pendingVideoModeIndex++;
-			if (pendingVideoModeIndex >= this->context.game->GetVideoModes().size()) {
-				pendingVideoModeIndex = 0;
-			}
-			this->updateTexts();
+	setupButton(fpsPrevButton, "<", arrowSize, ValueX - ArrowOffset, VideoRowY[1], [this]() {
+		const int count = static_cast<int>(availableFPS.size());
+		pendingFpsIndex = (pendingFpsIndex - 1 + count) % count;
+		refreshVideoTexts();
+		});
+	setupButton(fpsNextButton, ">", arrowSize, ValueX + ArrowOffset, VideoRowY[1], [this]() {
+		const int count = static_cast<int>(availableFPS.size());
+		pendingFpsIndex = (pendingFpsIndex + 1) % count;
+		refreshVideoTexts();
 		});
 
-
-	// FPS
-	fpsLabel.setFont(font);
-	fpsLabel.setString(this->context.i18n->get("option.fps"));
-	fpsLabel.setCharacterSize(40);
-	sf::FloatRect fpsLblRect = fpsLabel.getLocalBounds();
-	fpsLabel.setOrigin(fpsLblRect.left, fpsLblRect.top + fpsLblRect.height / 2.f);
-	fpsLabel.setPosition(500.f, row2_Y);
-
-	fpsValueText.setFont(font);
-	fpsValueText.setCharacterSize(40);
-
-	fpsPrevButton.setText("<");
-	fpsPrevButton.setSize(sf::Vector2f(60.f, 60.f));
-	fpsPrevButton.setPosition(1300.f - 200.f, row2_Y);
-	fpsPrevButton.setCallback([this]()
-		{
-			pendingFpsIndex--;
-			if (pendingFpsIndex < 0) {
-				pendingFpsIndex = static_cast<int>(availableFPS.size()) - 1;
-			}
-			this->updateTexts();
-		});
-
-	fpsNextButton.setText(">");
-	fpsNextButton.setSize(sf::Vector2f(60.f, 60.f));
-	fpsNextButton.setPosition(1300.f + 200.f, row2_Y);
-	fpsNextButton.setCallback([this]()
-		{
-			pendingFpsIndex++;
-			if (pendingFpsIndex >= static_cast<int>(availableFPS.size())) {
-				pendingFpsIndex = 0;
-			}
-			this->updateTexts();
-		});
-
-
-	// Fullscreen
-	fsLabel.setFont(font);
-	fsLabel.setString(this->context.i18n->get("option.fs"));
-	fsLabel.setCharacterSize(40);
-	sf::FloatRect fsLblRect = fsLabel.getLocalBounds();
-	fsLabel.setOrigin(fsLblRect.left, fsLblRect.top + fsLblRect.height / 2.f);
-	fsLabel.setPosition(500.f, row3_Y);
-
-	fsToggleBtn.setSize(sf::Vector2f(200.f, 60.f));
-	fsToggleBtn.setPosition(1300.f, row3_Y);
-	fsToggleBtn.setCallback([this]() {
+	setupButton(fsToggleBtn, "", sf::Vector2f(200.f, 50.f), ValueX, VideoRowY[2], [this]() {
 		pendingFullscreen = !pendingFullscreen;
-		this->updateTexts();
+		refreshVideoTexts();
 		});
 
-
-	// Languages
-	langLabel.setFont(font);
-	langLabel.setString(this->context.i18n->get("option.lang"));
-	langLabel.setCharacterSize(40);
-	sf::FloatRect langLblRect = langLabel.getLocalBounds();
-	langLabel.setOrigin(langLblRect.left, langLblRect.top + langLblRect.height / 2.f);
-	langLabel.setPosition(500.f, row4_Y);
-
-	langValueText.setFont(font);
-	langValueText.setCharacterSize(40);
-
-	langPrevButton.setText("<");
-	langPrevButton.setSize(sf::Vector2f(60.f, 60.f));
-	langPrevButton.setPosition(1300.f - 200.f, row4_Y);
-	langPrevButton.setCallback([this]()
-		{
-			pendingLanguageIndex--;
-			if (pendingLanguageIndex < 0) {
-				pendingLanguageIndex = static_cast<int>(availableLanguages.size()) - 1;
-			}
-			this->updateTexts();
+	setupButton(langPrevButton, "<", arrowSize, ValueX - ArrowOffset, VideoRowY[3], [this]() {
+		const int count = static_cast<int>(availableLanguages.size());
+		pendingLanguageIndex = (pendingLanguageIndex - 1 + count) % count;
+		refreshVideoTexts();
+		});
+	setupButton(langNextButton, ">", arrowSize, ValueX + ArrowOffset, VideoRowY[3], [this]() {
+		const int count = static_cast<int>(availableLanguages.size());
+		pendingLanguageIndex = (pendingLanguageIndex + 1) % count;
+		refreshVideoTexts();
 		});
 
-	langNextButton.setText(">");
-	langNextButton.setSize(sf::Vector2f(60.f, 60.f));
-	langNextButton.setPosition(1300.f + 200.f, row4_Y);
-	langNextButton.setCallback([this]()
-		{
-			pendingLanguageIndex++;
-			if (pendingLanguageIndex >= static_cast<int>(availableLanguages.size())) {
-				pendingLanguageIndex = 0;
-			}
-			this->updateTexts();
+	for (GUI::Button* b : { &resPrevButton, &resNextButton, &fpsPrevButton, &fpsNextButton,
+							&langPrevButton, &langNextButton })
+		setColors(*b, BtnNormal, BtnHover);
+
+	// ---------------- Controls tab ----------------
+	styleText(groupNameText, font, 34, sf::Color(255, 220, 120));
+	for (sf::Text* t : { &headerAction, &headerKey1, &headerKey2, &scrollText })
+		styleText(*t, font, 24, SubtleText);
+	styleText(hintText, font, 22, SubtleText);
+
+	setupButton(groupPrevButton, "<", arrowSize, ScreenW / 2.f - 250.f, GroupSelectorY, [this]() {
+		const std::size_t count = this->context.input->groups().size();
+		if (count == 0) return;
+		currentGroup = (currentGroup + count - 1) % count;
+		scrollOffset = 0;
+		refreshControlsTexts();
 		});
-
-
-	// Action button
-	float buttonY = 920.f;
-
-	// Back to the previous state
-	backButton.setText(this->context.i18n->get("option.back"));
-	backButton.setSize(sf::Vector2f(300.f, 80.f));
-	backButton.setPosition(1920.f / 4.f, buttonY);
-	backButton.setCallback([this]()
-		{
-			requestPop = true;
+	setupButton(groupNextButton, ">", arrowSize, ScreenW / 2.f + 250.f, GroupSelectorY, [this]() {
+		const std::size_t count = this->context.input->groups().size();
+		if (count == 0) return;
+		currentGroup = (currentGroup + 1) % count;
+		scrollOffset = 0;
+		refreshControlsTexts();
 		});
+	setColors(groupPrevButton, BtnNormal, BtnHover);
+	setColors(groupNextButton, BtnNormal, BtnHover);
 
-	// Apply button
-	applyButton.setText(this->context.i18n->get("option.apply"));
-	applyButton.setSize(sf::Vector2f(300.f, 80.f));
-	applyButton.setPosition(1920.f / 2.f, buttonY);
-	applyButton.setNormalColor(sf::Color(50, 150, 50));
-	applyButton.setHoverColor(sf::Color(80, 180, 80));
-	applyButton.setCallback([this]()
-		{
-			this->applySettings();
-		});
+	rows.resize(MaxVisibleRows);
+	for (std::size_t r = 0; r < MaxVisibleRows; ++r) {
+		const float y = RowsStartY + static_cast<float>(r) * RowStep;
+		styleText(rows[r].label, font, 28);
 
-	// Close the game
-	quitButton.setText(this->context.i18n->get("menu.quit"));
-	quitButton.setSize(sf::Vector2f(350.f, 80.f));
-	quitButton.setPosition(1920.f * 0.75f, buttonY);
-	quitButton.setNormalColor(sf::Color(150, 50, 50));
-	quitButton.setHoverColor(sf::Color(180, 80, 80));
-	quitButton.setCallback([this]()
-		{
-			requestQuit = true;
+		for (int s = 0; s < InputManager::SlotCount; ++s) {
+			auto button = std::make_unique<GUI::Button>(font);
+			button->setSize(sf::Vector2f(200.f, 46.f));
+			button->setCharacterSize(24);
+			button->setPosition(s == 0 ? Key1X : Key2X, y);
+			button->setCallback([this, r, s]() { beginListening(scrollOffset + r, s); });
+			setColors(*button, BtnNormal, BtnHover);
+			rows[r].slotButtons[s] = std::move(button);
+		}
+	}
+
+	// ---------------- Bottom buttons ----------------
+	const sf::Vector2f bottomSize(260.f, 60.f);
+	const float bottomY = 970.f;
+
+	setupButton(backButton, "", bottomSize, ScreenW / 2.f - 300.f, bottomY, [this]() { requestClose(); });
+	setupButton(resetButton, "", bottomSize, ScreenW / 2.f, bottomY, [this]() {
+		this->context.input->resetGroup(currentGroup);
+		stopListening();
 		});
+	setupButton(applyButton, "", bottomSize, ScreenW / 2.f + 300.f, bottomY, [this]() { applySettings(); });
+	setColors(applyButton, Green, GreenHover);
+
+	for (GUI::Button* b : { &backButton, &resetButton, &applyButton })
+		b->setCharacterSize(26);
 }
+
+// ----------------------------------------------------------------------
+// Text refresh (called after any change and after a language switch)
+// ----------------------------------------------------------------------
 
 void OptionState::updateTexts()
 {
+	const auto& i18n = *this->context.i18n;
+
+	placeText(titleText, i18n.get("option.title"), ScreenW / 2.f, 90.f, true);
+
+	tabVideoButton.setText(i18n.get("option.tab.video"));
+	tabControlsButton.setText(i18n.get("option.tab.controls"));
+	backButton.setText(i18n.get("option.back"));
+	applyButton.setText(i18n.get("option.apply"));
+	resetButton.setText(i18n.get("option.reset"));
+
+	refreshVideoTexts();
+	refreshControlsTexts();
+}
+
+void OptionState::refreshVideoTexts()
+{
+	const auto& i18n = *this->context.i18n;
 	const auto& modes = this->context.game->GetVideoModes();
-	if (!modes.empty() && pendingVideoModeIndex >= 0 && pendingVideoModeIndex < modes.size())
+
+	// Resolution
+	placeText(resLabel, i18n.get("option.res"), LabelX, VideoRowY[0], false);
+	if (!modes.empty() && pendingVideoModeIndex >= 0
+		&& static_cast<std::size_t>(pendingVideoModeIndex) < modes.size())
 	{
-		std::string resString = std::to_string(modes[pendingVideoModeIndex].width) + "x" +
-			std::to_string(modes[pendingVideoModeIndex].height);
-		resValueText.setString(resString);
-
-		sf::FloatRect bounds = resValueText.getLocalBounds();
-		resValueText.setOrigin(bounds.left + bounds.width / 2.0f, bounds.top + bounds.height / 2.0f);
-		resValueText.setPosition(1300.f, 320.f);
+		const auto& mode = modes[pendingVideoModeIndex];
+		placeText(resValueText, std::to_string(mode.width) + "x" + std::to_string(mode.height),
+			ValueX, VideoRowY[0], true);
 	}
 
-	unsigned int fps = availableFPS[pendingFpsIndex];
-	if (fps == 0) {
-		fpsValueText.setString(this->context.i18n->get("option.unlimited"));
+	// FPS
+	placeText(fpsLabel, i18n.get("option.fps"), LabelX, VideoRowY[1], false);
+	const unsigned int fps = availableFPS[pendingFpsIndex];
+	placeText(fpsValueText,
+		fps == 0 ? i18n.get("option.unlimited") : sf::String(std::to_string(fps)),
+		ValueX, VideoRowY[1], true);
+
+	// Fullscreen
+	placeText(fsLabel, i18n.get("option.fs"), LabelX, VideoRowY[2], false);
+	fsToggleBtn.setText(i18n.get(pendingFullscreen ? "option.yes" : "option.no"));
+	if (pendingFullscreen) setColors(fsToggleBtn, Green, GreenHover);
+	else                   setColors(fsToggleBtn, Red, RedHover);
+
+	// Language
+	placeText(langLabel, i18n.get("option.lang"), LabelX, VideoRowY[3], false);
+	const std::string& langCode = availableLanguages[pendingLanguageIndex];
+	std::string langName = langCode;
+	if (langCode == "fr") langName = "Francais";
+	else if (langCode == "en") langName = "English";
+	placeText(langValueText, langName, ValueX, VideoRowY[3], true);
+}
+
+void OptionState::refreshControlsTexts()
+{
+	const auto& i18n = *this->context.i18n;
+	const auto& groups = this->context.input->groups();
+
+	for (auto& row : rows) row.visible = false;
+	if (groups.empty()) return;
+
+	currentGroup = std::min(currentGroup, groups.size() - 1);
+	const auto& group = groups[currentGroup];
+
+	placeText(groupNameText, i18n.get("input.group." + group.id), ScreenW / 2.f, GroupSelectorY, true);
+	placeText(headerAction, i18n.get("option.col.action"), LabelX, HeaderY, false);
+	placeText(headerKey1, i18n.get("option.col.key1"), Key1X, HeaderY, true);
+	placeText(headerKey2, i18n.get("option.col.key2"), Key2X, HeaderY, true);
+
+	const std::size_t total = group.actions.size();
+	const std::size_t maxScroll = total > MaxVisibleRows ? total - MaxVisibleRows : 0;
+	scrollOffset = std::min(scrollOffset, maxScroll);
+
+	for (std::size_t r = 0; r < MaxVisibleRows; ++r) {
+		const std::size_t index = scrollOffset + r;
+		if (index >= total) break;
+
+		auto& row = rows[r];
+		row.visible = true;
+
+		const auto& action = group.actions[index];
+		const float y = RowsStartY + static_cast<float>(r) * RowStep;
+		placeText(row.label, i18n.get("input.action." + action.id), LabelX, y, false);
+
+		for (int s = 0; s < InputManager::SlotCount; ++s) {
+			const bool listening = isListening()
+				&& static_cast<std::size_t>(listeningAction) == index && listeningSlot == s;
+
+			row.slotButtons[s]->setText(listening ? i18n.get("option.listening")
+				: bindingToText(action.current[s]));
+
+			if (listening) setColors(*row.slotButtons[s], BtnListening, BtnListeningHover);
+			else           setColors(*row.slotButtons[s], BtnNormal, BtnHover);
+		}
+	}
+
+	// Scroll indicator
+	if (maxScroll > 0) {
+		const std::size_t last = std::min(scrollOffset + MaxVisibleRows, total);
+		placeText(scrollText, std::to_string(scrollOffset + 1) + "-" + std::to_string(last)
+			+ " / " + std::to_string(total), ScreenW / 2.f, ScrollY, true);
 	}
 	else {
-		fpsValueText.setString(std::to_string(fps));
-	}
-	sf::FloatRect fpsBounds = fpsValueText.getLocalBounds();
-	fpsValueText.setOrigin(fpsBounds.left + fpsBounds.width / 2.0f, fpsBounds.top + fpsBounds.height / 2.0f);
-	fpsValueText.setPosition(1300.f, 470.f);
-
-
-	if (pendingFullscreen) {
-		fsToggleBtn.setText(this->context.i18n->get("option.yes"));
-		fsToggleBtn.setNormalColor(sf::Color(50, 150, 50));
-	}
-	else {
-		fsToggleBtn.setText(this->context.i18n->get("option.no"));
-		fsToggleBtn.setNormalColor(sf::Color(150, 50, 50));
+		scrollText.setString("");
 	}
 
+	placeText(hintText, i18n.get(isListening() ? "option.hint.listening" : "option.hint.controls"),
+		ScreenW / 2.f, HintY, true);
+}
 
-	std::string langCode = availableLanguages[pendingLanguageIndex];
-	if (langCode == "fr") langValueText.setString("Francais");
-	else if (langCode == "en") langValueText.setString("English");
-	else langValueText.setString(langCode);
+void OptionState::refreshTabStyles()
+{
+	const bool video = (currentTab == Tab::Video);
+	setColors(tabVideoButton, video ? TabActive : BtnNormal, video ? TabActiveHover : BtnHover);
+	setColors(tabControlsButton, video ? BtnNormal : TabActive, video ? BtnHover : TabActiveHover);
+}
 
-	sf::FloatRect langBounds = langValueText.getLocalBounds();
-	langValueText.setOrigin(langBounds.left + langBounds.width / 2.0f, langBounds.top + langBounds.height / 2.0f);
-	langValueText.setPosition(1300.f, 770.f);
+sf::String OptionState::bindingToText(const InputManager::Binding& binding) const
+{
+	const auto& i18n = *this->context.i18n;
 
-	titleText.setString(this->context.i18n->get("option.title"));
-	sf::FloatRect titleBounds = titleText.getLocalBounds();
-	titleText.setOrigin(titleBounds.left + titleBounds.width / 2.0f, titleBounds.top + titleBounds.height / 2.0f); // Recentrage du titre
+	switch (binding.type) {
+	case InputManager::Binding::Type::Key:
+		return sf::String(InputManager::toString(binding));
+	case InputManager::Binding::Type::Mouse:
+		if (binding.mouse == sf::Mouse::Left)   return i18n.get("input.mouse.left");
+		if (binding.mouse == sf::Mouse::Right)  return i18n.get("input.mouse.right");
+		if (binding.mouse == sf::Mouse::Middle) return i18n.get("input.mouse.middle");
+		if (binding.mouse == sf::Mouse::XButton1) return i18n.get("input.mouse.x1");
+		return i18n.get("input.mouse.x2");
+	default:
+		return i18n.get("input.unbound");
+	}
+}
 
-	resLabel.setString(this->context.i18n->get("option.res"));
-	fsLabel.setString(this->context.i18n->get("option.fs"));
-	langLabel.setString(this->context.i18n->get("option.lang"));
+// ----------------------------------------------------------------------
+// Actions
+// ----------------------------------------------------------------------
 
-	backButton.setText(this->context.i18n->get("option.back"));
-	applyButton.setText(this->context.i18n->get("option.apply"));
-	quitButton.setText(this->context.i18n->get("menu.quit"));
+void OptionState::setTab(Tab tab)
+{
+	stopListening();
+	currentTab = tab;
+	refreshTabStyles();
 }
 
 void OptionState::applySettings()
 {
+	// Video
 	this->context.game->setCurrentVideoModeIndex(pendingVideoModeIndex);
 	this->context.game->setFullScreen(pendingFullscreen);
-
 	this->context.game->setMaxFPS(availableFPS[pendingFpsIndex]);
 
-	std::string selectedLang = availableLanguages[pendingLanguageIndex];
-	this->context.i18n->loadLanguage(selectedLang);
+	this->context.i18n->loadLanguage(availableLanguages[pendingLanguageIndex]);
 
 	const auto& modes = this->context.game->GetVideoModes();
-	if (!modes.empty() && pendingVideoModeIndex >= 0 && pendingVideoModeIndex < modes.size()) {
+	if (!modes.empty() && pendingVideoModeIndex >= 0
+		&& static_cast<std::size_t>(pendingVideoModeIndex) < modes.size())
+	{
 		this->context.game->setResWidth(modes[pendingVideoModeIndex].width);
 		this->context.game->setResHeight(modes[pendingVideoModeIndex].height);
 	}
 	this->context.game->updateWindow();
+	this->context.game->saveSettings(); // persist video + language
+
+	// Controls
+	stopListening();
+	this->context.input->save();
+	savedBindings = *this->context.input;
 
 	this->updateTexts();
 }
 
-void OptionState::handleEvent(const sf::Event& event)
+void OptionState::requestClose()
 {
-	applyButton.handleEvent(event, *this->context.window);
+	// Leaving without "Apply": undo unsaved key changes
+	*this->context.input = savedBindings;
+	requestPop = true;
+}
 
-	backButton.handleEvent(event, *this->context.window);
+// ----------------------------------------------------------------------
+// Key rebinding
+// ----------------------------------------------------------------------
 
-	quitButton.handleEvent(event, *this->context.window);
+void OptionState::beginListening(std::size_t actionIndex, int slot)
+{
+	listeningAction = static_cast<int>(actionIndex);
+	listeningSlot = slot;
+	refreshControlsTexts();
+}
 
-	resPrevButton.handleEvent(event, *this->context.window);
-	resNextButton.handleEvent(event, *this->context.window);
+void OptionState::stopListening()
+{
+	listeningAction = -1;
+	listeningSlot = -1;
+	refreshControlsTexts();
+}
 
-	fpsPrevButton.handleEvent(event, *this->context.window);
-	fpsNextButton.handleEvent(event, *this->context.window);
+void OptionState::assignBinding(const InputManager::Binding& binding)
+{
+	this->context.input->setBinding(currentGroup, static_cast<std::size_t>(listeningAction),
+		listeningSlot, binding);
+	stopListening();
+}
 
-	fsToggleBtn.handleEvent(event, *this->context.window);
-
-	langPrevButton.handleEvent(event, *this->context.window);
-	langNextButton.handleEvent(event, *this->context.window);
-
+void OptionState::handleBindingCapture(const sf::Event& event)
+{
 	if (event.type == sf::Event::KeyPressed)
 	{
-		if (event.key.code == sf::Keyboard::Escape)
-		{
-			this->requestPop = true;
+		const sf::Keyboard::Key code = event.key.code;
+
+		if (code == sf::Keyboard::Escape) {
+			stopListening(); // cancel
 		}
+		else if (code == sf::Keyboard::Delete || code == sf::Keyboard::BackSpace) {
+			assignBinding(InputManager::Binding()); // clear the slot
+		}
+		else if (InputManager::hasKeyName(code)) {
+			assignBinding(InputManager::Binding::fromKey(code));
+		}
+		// Keys we cannot serialize are ignored
 	}
+	else if (event.type == sf::Event::MouseButtonPressed)
+	{
+		// GUI::Button fires on release: swallow the release of this click
+		if (event.mouseButton.button == sf::Mouse::Left)
+			ignoreNextLeftRelease = true;
+
+		assignBinding(InputManager::Binding::fromMouse(event.mouseButton.button));
+	}
+}
+
+void OptionState::scrollRows(int delta)
+{
+	const auto& groups = this->context.input->groups();
+	if (groups.empty()) return;
+
+	const std::size_t total = groups[currentGroup].actions.size();
+	const std::size_t maxScroll = total > MaxVisibleRows ? total - MaxVisibleRows : 0;
+
+	if (delta < 0 && scrollOffset > 0) --scrollOffset;
+	else if (delta > 0 && scrollOffset < maxScroll) ++scrollOffset;
+
+	refreshControlsTexts();
+}
+
+// ----------------------------------------------------------------------
+// State interface
+// ----------------------------------------------------------------------
+
+void OptionState::handleEvent(const sf::Event& event)
+{
+	if (ignoreNextLeftRelease && event.type == sf::Event::MouseButtonReleased
+		&& event.mouseButton.button == sf::Mouse::Left)
+	{
+		ignoreNextLeftRelease = false;
+		return;
+	}
+
+	// While waiting for a key, everything goes to the capture (Escape = cancel)
+	if (isListening()) {
+		handleBindingCapture(event);
+		return;
+	}
+
+	tabVideoButton.handleEvent(event, *this->context.window);
+	tabControlsButton.handleEvent(event, *this->context.window);
+	backButton.handleEvent(event, *this->context.window);
+	applyButton.handleEvent(event, *this->context.window);
+
+	if (currentTab == Tab::Video)
+	{
+		resPrevButton.handleEvent(event, *this->context.window);
+		resNextButton.handleEvent(event, *this->context.window);
+		fpsPrevButton.handleEvent(event, *this->context.window);
+		fpsNextButton.handleEvent(event, *this->context.window);
+		fsToggleBtn.handleEvent(event, *this->context.window);
+		langPrevButton.handleEvent(event, *this->context.window);
+		langNextButton.handleEvent(event, *this->context.window);
+	}
+	else
+	{
+		groupPrevButton.handleEvent(event, *this->context.window);
+		groupNextButton.handleEvent(event, *this->context.window);
+		resetButton.handleEvent(event, *this->context.window);
+
+		for (auto& row : rows)
+			if (row.visible)
+				for (auto& button : row.slotButtons)
+					button->handleEvent(event, *this->context.window);
+
+		if (event.type == sf::Event::MouseWheelScrolled)
+			scrollRows(event.mouseWheelScroll.delta > 0.f ? -1 : 1);
+	}
+
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+		requestClose();
 }
 
 void OptionState::handleInput()
@@ -337,50 +562,82 @@ void OptionState::update(float deltaTime)
 		this->context.game->popState();
 		return;
 	}
-	if (requestQuit) {
-		this->context.window->close();
-		return;
-	}
 
+	tabVideoButton.update(*this->context.window);
+	tabControlsButton.update(*this->context.window);
+	backButton.update(*this->context.window);
 	applyButton.update(*this->context.window);
 
-	backButton.update(*this->context.window);
+	if (currentTab == Tab::Video)
+	{
+		resPrevButton.update(*this->context.window);
+		resNextButton.update(*this->context.window);
+		fpsPrevButton.update(*this->context.window);
+		fpsNextButton.update(*this->context.window);
+		fsToggleBtn.update(*this->context.window);
+		langPrevButton.update(*this->context.window);
+		langNextButton.update(*this->context.window);
+	}
+	else
+	{
+		groupPrevButton.update(*this->context.window);
+		groupNextButton.update(*this->context.window);
+		resetButton.update(*this->context.window);
 
-	quitButton.update(*this->context.window);
-
-	resPrevButton.update(*this->context.window);
-	resNextButton.update(*this->context.window);
-
-	fpsPrevButton.update(*this->context.window);
-	fpsNextButton.update(*this->context.window);
-
-	fsToggleBtn.update(*this->context.window);
-
-	langPrevButton.update(*this->context.window);
-	langNextButton.update(*this->context.window);
+		for (auto& row : rows)
+			if (row.visible)
+				for (auto& button : row.slotButtons)
+					button->update(*this->context.window);
+	}
 }
 
 void OptionState::draw(sf::RenderWindow& window)
 {
-
+	window.draw(overlay);
+	window.draw(panel);
 	window.draw(titleText);
-	window.draw(resLabel);
-	window.draw(resValueText);
-	window.draw(fpsLabel);
-	window.draw(fpsValueText);
-	window.draw(fsLabel);
-	window.draw(langLabel);
-	window.draw(langValueText);
+	window.draw(tabVideoButton);
+	window.draw(tabControlsButton);
 
-	window.draw(applyButton);
+	if (currentTab == Tab::Video)
+	{
+		window.draw(resLabel);
+		window.draw(resValueText);
+		window.draw(fpsLabel);
+		window.draw(fpsValueText);
+		window.draw(fsLabel);
+		window.draw(langLabel);
+		window.draw(langValueText);
+
+		window.draw(resPrevButton);
+		window.draw(resNextButton);
+		window.draw(fpsPrevButton);
+		window.draw(fpsNextButton);
+		window.draw(fsToggleBtn);
+		window.draw(langPrevButton);
+		window.draw(langNextButton);
+	}
+	else
+	{
+		window.draw(groupNameText);
+		window.draw(groupPrevButton);
+		window.draw(groupNextButton);
+		window.draw(headerAction);
+		window.draw(headerKey1);
+		window.draw(headerKey2);
+
+		for (auto& row : rows) {
+			if (!row.visible) continue;
+			window.draw(row.label);
+			for (auto& button : row.slotButtons)
+				window.draw(*button);
+		}
+
+		window.draw(scrollText);
+		window.draw(hintText);
+		window.draw(resetButton);
+	}
+
 	window.draw(backButton);
-	window.draw(quitButton);
-	window.draw(resPrevButton);
-	window.draw(resNextButton);
-	window.draw(fpsPrevButton);
-	window.draw(fpsNextButton);
-	window.draw(fsToggleBtn);
-
-	window.draw(langPrevButton);
-	window.draw(langNextButton);
+	window.draw(applyButton);
 }

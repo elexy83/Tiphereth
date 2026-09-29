@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include "Managers/ResourceManager.hpp"
 #include "Managers/LocalizationManager.hpp"
+#include "Managers/InputManager.hpp" 
 
 class Game;
 
@@ -27,6 +28,8 @@ struct Context {
     /// Pointer to the font asset manager repository.
     FontManager* fonts;
 
+    /// Pointer to the input (key bindings) manager.
+    InputManager* input;
 
     /// Pointer to the localization manager for text translations.
     LocalizationManager* i18n;
@@ -40,11 +43,14 @@ struct Context {
      * @param f Pointer to the FontManager repository.
      * @param i Pointer to the LocalizationManager repository.
      */
+
     Context(
         sf::RenderWindow* win = nullptr,
         Game* g = nullptr,
         TextureManager* tex = nullptr,
         FontManager* f = nullptr,
-        LocalizationManager* i = nullptr
-    ) : window(win), game(g), textures(tex), fonts(f), i18n(i) {}
+        LocalizationManager* i = nullptr,
+        InputManager* in = nullptr
+    ) : window(win), game(g), textures(tex), fonts(f), i18n(i), input(in) {
+    }
 };

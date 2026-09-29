@@ -2,136 +2,122 @@
 
 #include "States/State.hpp"
 #include "GUI/Button.hpp"
+#include "Managers/InputManager.hpp"
 #include <SFML/Graphics.hpp>
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <string>
 #include <vector>
 
 /**
- * @brief Option menu state allowing players to modify display settings.
+ * @brief Option menu with two tabs: Video (resolution, FPS, fullscreen, language)
+ *        and Controls (per-gameplay key rebinding).
  *
- * The OptionState class manages resolution scaling, fullscreen toggles,
- * and configuration adjustments with a pending changes buffer applied upon request.
+ * Every change is buffered: nothing is kept until "Apply" is pressed.
+ * "Back" / Escape discards pending video changes and restores the key bindings.
  */
 class OptionState : public State {
 
 private:
-    /// Main title text header displayed at the top of the menu.
+    enum class Tab { Video, Controls };
+
+    /// Number of binding rows displayed at once (the list scrolls beyond that).
+    static constexpr std::size_t MaxVisibleRows = 7;
+
+    /// One line of the controls list: action name + one button per slot.
+    struct BindingRow {
+        sf::Text label;
+        std::array<std::unique_ptr<GUI::Button>, InputManager::SlotCount> slotButtons;
+        bool visible = false;
+    };
+
+    // ---- Common ----
+    sf::RectangleShape overlay;
+    sf::RectangleShape panel;
     sf::Text titleText;
-
-    /// Static label text for the resolution setting row.
-    sf::Text resLabel;
-
-    /// Static label text for the fullscreen setting row.
-    sf::Text fsLabel;
-
-    /// Dynamic text displaying the currently selected resolution value.
-    sf::Text resValueText;
-
-    // Static label text for the language setting row.
-    sf::Text langLabel;
-
-    /// Dynamic text displaying the currently selected language value.
-    sf::Text langValueText;
-
-    /// Interactive button to apply pending configuration modifications.
-    GUI::Button applyButton;
-
-    /// Interactive button to return to the previous state.
+    GUI::Button tabVideoButton;
+    GUI::Button tabControlsButton;
     GUI::Button backButton;
+    GUI::Button applyButton;
+    GUI::Button resetButton;
 
-    /// Interactive button to terminate the application session.
-    GUI::Button quitButton;
-
-    /// Decrement button to cycle backward through available video resolutions.
+    // ---- Video tab ----
+    sf::Text resLabel;
+    sf::Text resValueText;
+    sf::Text fpsLabel;
+    sf::Text fpsValueText;
+    sf::Text fsLabel;
+    sf::Text langLabel;
+    sf::Text langValueText;
     GUI::Button resPrevButton;
-
-    /// Increment button to cycle forward through available video resolutions.
     GUI::Button resNextButton;
-
-    /// Decrement button to cycle backward through available languages.
+    GUI::Button fpsPrevButton;
+    GUI::Button fpsNextButton;
+    GUI::Button fsToggleBtn;
     GUI::Button langPrevButton;
-
-    /// Increment button to cycle forward through available languages.
     GUI::Button langNextButton;
 
-    /// Toggle button to switch between windowed and fullscreen display modes.
-    GUI::Button fsToggleBtn;
+    // ---- Controls tab ----
+    sf::Text groupNameText;
+    sf::Text headerAction;
+    sf::Text headerKey1;
+    sf::Text headerKey2;
+    sf::Text scrollText;
+    sf::Text hintText;
+    GUI::Button groupPrevButton;
+    GUI::Button groupNextButton;
+    std::vector<BindingRow> rows;
 
-    /// Buffer tracking the selected video mode index before confirmation.
-    int pendingVideoModeIndex;
+    // ---- State ----
+    Tab currentTab = Tab::Video;
 
-    /// Buffer tracking the selected language index before confirmation.
-    int pendingLanguageIndex;
+    int pendingVideoModeIndex = 0;
+    int pendingLanguageIndex = 0;
+    int pendingFpsIndex = 1;
+    bool pendingFullscreen = false;
 
-    /// Buffer tracking the fullscreen toggle state before confirmation.
-    bool pendingFullscreen;
+    std::size_t currentGroup = 0;
+    std::size_t scrollOffset = 0;
+    int listeningAction = -1;   ///< Absolute action index waiting for a key, -1 = none.
+    int listeningSlot = -1;
 
-    /// Safe-exit security flag requesting state removal on the next frame update.
-    bool requestPop;
+    /// Snapshot of the bindings, restored when leaving without applying.
+    InputManager savedBindings;
 
-    /// Safe-exit security flag requesting application closure on the next frame update.
-    bool requestQuit;
+    bool requestPop = false;
+
+    /// Set when a left click was used as a binding: its release must not re-trigger a button.
+    bool ignoreNextLeftRelease = false;
 
     std::vector<std::string> availableLanguages = { "fr", "en" };
-
-    sf::Text fpsLabel;
-
-    sf::Text fpsValueText;
-
-    GUI::Button fpsPrevButton;
-
-    GUI::Button fpsNextButton;
-
-    std::vector<unsigned int> availableFPS = { 30, 60, 120, 144, 240, 0 }; // 0 = unlimitted
-
-    int pendingFpsIndex;
+    std::vector<unsigned int> availableFPS = { 30, 60, 120, 144, 240, 0 }; // 0 = unlimited
 
 private:
-    /**
-     * @brief Initializes and positions all user interface labels and buttons.
-     */
     void initUI();
-
-    /**
-     * @brief Refreshes dynamic text strings and centering coordinates.
-     */
     void updateTexts();
+    void refreshVideoTexts();
+    void refreshControlsTexts();
+    void refreshTabStyles();
 
-    /**
-     * @brief Applies pending video mode and fullscreen settings to the engine.
-     */
+    void setTab(Tab tab);
     void applySettings();
+    void requestClose();
+
+    // Key rebinding
+    bool isListening() const { return listeningAction >= 0; }
+    void beginListening(std::size_t actionIndex, int slot);
+    void stopListening();
+    void handleBindingCapture(const sf::Event& event);
+    void assignBinding(const InputManager::Binding& binding);
+    void scrollRows(int delta);
+    sf::String bindingToText(const InputManager::Binding& binding) const;
 
 public:
-    /**
-     * @brief Constructs a new OptionState instance.
-     *
-     * @param context Shared global context toolbox.
-     */
     OptionState(Context context);
 
-    /**
-     * @brief Handles incoming SFML window events (mouse clicks, key presses).
-     *
-     * @param event Constant reference to the sf::Event being processed.
-     */
     void handleEvent(const sf::Event& event) override;
-
-    /**
-     * @brief Handles real-time polling inputs.
-     */
     void handleInput() override;
-
-    /**
-     * @brief Updates state logic per frame and evaluates safe-exit flags.
-     *
-     * @param deltaTime Frame duration time delta measured in seconds.
-     */
     void update(float deltaTime) override;
-
-    /**
-     * @brief Renders the option screen GUI components onto the target window.
-     *
-     * @param window Target render window.
-     */
     void draw(sf::RenderWindow& window) override;
 };

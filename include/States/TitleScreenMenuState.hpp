@@ -11,6 +11,9 @@
  */
 class TitleScreenMenuState : public State {
 private:
+
+    enum class PendingAction { None, Play, Options, Quit };
+
     /// Main game title text header.
     sf::Text titleText;
 
@@ -19,6 +22,13 @@ private:
 
     /// Interactive button to open the option settings menu.
     GUI::Button optionButton;
+
+    /// Interactive button to terminate the application session.
+    GUI::Button quitButton;
+
+    PendingAction pendingAction = PendingAction::None;
+
+    bool requestQuit;
 
 private:
     /**

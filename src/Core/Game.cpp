@@ -4,12 +4,21 @@
 #include "States/ChooseCharacterState.hpp"
 #include <iostream>
 
+namespace
+{
+	const char* const SettingsPath = "assets/config/settings.json";
+}
+
 Game::Game()
 {
 	this->initWindow();
 	this->initView();
 	this->initContext();
-	this->i18n.loadLanguage("en");
+	this->i18n.loadLanguage("fr");
+
+	registerDefaultBindings(this->inputManager);
+	this->inputManager.load();
+
 	this->initState();
 }
 
@@ -21,7 +30,80 @@ void Game::initWindow()
 	this->resWidth = this->videoModes[this->currentVideoModeIndex].width;
 	this->resHeight = this->videoModes[this->currentVideoModeIndex].height;
 
+	this->loadSettings(); // override the defaults above with the saved values
+
 	this->updateWindow();
+}
+
+void Game::loadSettings()
+{
+	std::ifstream file(SettingsPath);
+	if (!file.is_open()) return; // first launch: keep the defaults
+
+	std::stringstream buffer;
+	buffer << file.rdbuf();
+	const std::string content = buffer.str();
+
+	std::unordered_map<std::string, std::string> values;
+	const std::regex pattern(R"(\"([^"]+)\"\s*:\s*\"?([^",}\s]*)\"?)");
+	for (auto it = std::sregex_iterator(content.begin(), content.end(), pattern);
+		it != std::sregex_iterator(); ++it)
+	{
+		values[(*it)[1].str()] = (*it)[2].str();
+	}
+
+	// Resolution: only restored if this monitor still offers it
+	if (values.count("width") && values.count("height"))
+	{
+		try {
+			const unsigned int w = static_cast<unsigned int>(std::stoul(values["width"]));
+			const unsigned int h = static_cast<unsigned int>(std::stoul(values["height"]));
+			for (std::size_t i = 0; i < this->videoModes.size(); ++i)
+			{
+				if (this->videoModes[i].width == w && this->videoModes[i].height == h)
+				{
+					this->currentVideoModeIndex = static_cast<int>(i);
+					this->resWidth = w;
+					this->resHeight = h;
+					break;
+				}
+			}
+		}
+		catch (...) {}
+	}
+
+	if (values.count("fullscreen"))
+		this->isFullscreen = (values["fullscreen"] == "true");
+
+	if (values.count("max_fps"))
+	{
+		try { this->maxFPS = static_cast<unsigned int>(std::stoul(values["max_fps"])); }
+		catch (...) {}
+	}
+
+	if (values.count("language") && !values["language"].empty())
+		this->i18n.loadLanguage(values["language"]);
+}
+
+void Game::saveSettings()
+{
+	std::error_code ec;
+	std::filesystem::create_directories(std::filesystem::path(SettingsPath).parent_path(), ec);
+
+	std::ofstream file(SettingsPath);
+	if (!file.is_open())
+	{
+		std::cerr << "Game::saveSettings - Impossible d'ecrire : " << SettingsPath << std::endl;
+		return;
+	}
+
+	file << "{\n"
+		<< "  \"width\": " << this->resWidth << ",\n"
+		<< "  \"height\": " << this->resHeight << ",\n"
+		<< "  \"fullscreen\": " << (this->isFullscreen ? "true" : "false") << ",\n"
+		<< "  \"max_fps\": " << this->maxFPS << ",\n"
+		<< "  \"language\": \"" << this->i18n.getCurrentLanguage() << "\"\n"
+		<< "}\n";
 }
 
 void Game::initView()
@@ -42,6 +124,7 @@ void Game::initContext()
 	this->context.textures = &this->textures;
 	this->context.fonts = &this->fonts;
 	this->context.i18n = &this->i18n;
+	this->context.input = &this->inputManager;
 
 	try {
 		this->context.fonts->load(Fonts::ID::Title, "assets/fonts/Orbitron/static/Orbitron-Regular.ttf");
