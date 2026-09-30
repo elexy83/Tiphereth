@@ -30,6 +30,9 @@ void TitleScreenMenuState::initTitle()
 
 void TitleScreenMenuState::initButtons()
 {
+	// The callbacks only set a flag: the real work is done in update(),
+	// because changeState()/popState() destroy this state while it is still
+	// inside handleEvent().
 
 	// Play button
 	playButton.setText(this->context.i18n->get("menu.play"));
@@ -58,7 +61,12 @@ void TitleScreenMenuState::initButtons()
 
 void TitleScreenMenuState::initBackground()
 {
-
+	// The texture is loaded once in Game and shared through the TextureManager
+	if (this->context.textures->has(Textures::ID::BackgroundTitle))
+	{
+		this->background.setTexture(this->context.textures->get(Textures::ID::BackgroundTitle));
+		this->background.setDim(90); // 0 = image untouched, 255 = black
+	}
 }
 
 
@@ -80,6 +88,7 @@ void TitleScreenMenuState::handleEvent(const sf::Event& event)
 
 void TitleScreenMenuState::update(float deltaTime)
 {
+	// Deferred actions: safe here, nothing is iterating on this state anymore
 	if (pendingAction != PendingAction::None)
 	{
 		const PendingAction action = pendingAction;
@@ -92,6 +101,7 @@ void TitleScreenMenuState::update(float deltaTime)
 			break;
 
 		case PendingAction::Options:
+			// pushState (not changeState) to be able to come back to the title screen
 			this->context.game->pushState(States::ID::Option);
 			break;
 
@@ -103,7 +113,7 @@ void TitleScreenMenuState::update(float deltaTime)
 			break;
 		}
 
-		return;
+		return; // "this" may have been destroyed by changeState(): touch nothing else
 	}
 
 	playButton.update(*this->context.window);
@@ -113,6 +123,7 @@ void TitleScreenMenuState::update(float deltaTime)
 
 void TitleScreenMenuState::draw(sf::RenderWindow& window)
 {
+	window.draw(this->background);
 	window.draw(this->titleText);
 	window.draw(this->playButton);
 	window.draw(this->optionButton);

@@ -142,18 +142,23 @@
     <ClCompile Include="src\GUI\Button.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\States\ChooseCharacterState.cpp" />
+    <ClCompile Include="src\States\GameState.cpp" />
     <ClCompile Include="src\States\OptionState.cpp" />
+    <ClCompile Include="src\States\ShopState.cpp" />
     <ClCompile Include="src\States\TitleScreenMenuState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Core\Context.hpp" />
     <ClInclude Include="include\Core\Game.hpp" />
+    <ClInclude Include="include\GUI\Background.hpp" />
     <ClInclude Include="include\GUI\Button.hpp" />
     <ClInclude Include="include\Managers\InputManager.hpp" />
     <ClInclude Include="include\Managers\LocalizationManager.hpp" />
     <ClInclude Include="include\Managers\ResourceManager.hpp" />
     <ClInclude Include="include\States\ChooseCharacterState.hpp" />
+    <ClInclude Include="include\States\GameState.hpp" />
     <ClInclude Include="include\States\OptionState.hpp" />
+    <ClInclude Include="include\States\ShopState.hpp" />
     <ClInclude Include="include\States\State.hpp" />
     <ClInclude Include="include\States\StateIdentifiers.hpp" />
     <ClInclude Include="include\States\TitleScreenMenuState.hpp" />
@@ -176,7 +181,10 @@
     <None Include="sfml-window-d-2.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="assets\backgrounds\Alele.jpg" />
+    <Image Include="assets\backgrounds\NT22R.jpg" />
     <Image Include="assets\french_gekota.ico" />
+    <Image Include="C:\Users\elexy\Pictures\20250608_002709.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,6 +3,7 @@
   "menu.options": "Settings",
   "menu.quit": "Quit Game",
 
+
   "option.title": "SETTINGS",
   "option.res": "Resolution :",
   "option.fs": "Fullscreen :",
@@ -22,6 +23,8 @@
   "option.col.key2": "Key 2",
   "option.hint.controls": "Click a key to change it - Mouse wheel: scroll",
   "option.hint.listening": "Press a key or mouse button - Del: clear - Esc: cancel",
+
+
   "input.unbound": "-",
   "input.mouse.left": "Left click",
   "input.mouse.right": "Right click",
@@ -40,5 +43,15 @@
   "input.action.secondary_action": "Secondary action",
   "input.action.interact": "Interact",
   "input.action.sprint": "Sprint",
-  "input.action.inventory": "Inventory"
+  "input.action.inventory": "Inventory",
+
+  "choose.title": "Choose your character",
+  "choose.character.1": "Character 1",
+  "choose.character.2": "Character 2",
+  "choose.character.3": "Character 3",
+  "choose.character.4": "Character 4",
+  "shop.title": "Shop",
+  "shop.play": "Play",
+  "game.placeholder": "Gameplay",
+  "game.hint": "Press Esc to go back",
 }

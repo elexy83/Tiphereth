@@ -3,6 +3,7 @@
 #include "States/State.hpp"
 #include "GUI/Button.hpp"
 #include "Managers/InputManager.hpp"
+#include "GUI/Background.hpp"
 #include <SFML/Graphics.hpp>
 #include <array>
 #include <cstddef>
@@ -92,6 +93,8 @@ private:
 
     std::vector<std::string> availableLanguages = { "fr", "en" };
     std::vector<unsigned int> availableFPS = { 30, 60, 120, 144, 240, 0 }; // 0 = unlimited
+
+    GUI::Background background;
 
 private:
     void initUI();

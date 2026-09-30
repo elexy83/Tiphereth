@@ -72,6 +72,8 @@ private:
 
     unsigned int maxFPS = 60;
 
+    int selectedCharacter = 0;
+
 private:
     /**
      * @brief Factory method responsible for instantiating states dynamically based on their ID.
@@ -216,4 +218,8 @@ public:
     void loadSettings();
 
     void saveSettings();
+
+    void setSelectedCharacter(int index) { selectedCharacter = index; }
+
+    int getSelectedCharacter() const { return selectedCharacter; }
 };

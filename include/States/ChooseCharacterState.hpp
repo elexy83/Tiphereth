@@ -1,48 +1,42 @@
 #pragma once
 
-#include "State.hpp"
+#include "States/State.hpp"
+#include "GUI/Button.hpp"
+#include "GUI/Background.hpp"
+#include <SFML/Graphics.hpp>
+#include <array>
+#include <cstddef>
+#include <memory>
 
 /**
- * @brief Character selection screen state.
+ * @brief Character selection screen: one button per character (4 for now).
  *
- * The ChooseCharacterState class handles the character selection interface
- * where players can pick their gamemode types before starting the game session.
+ * Clicking a character stores the choice in Game and opens the ShopState on top of this state.
+ * Escape goes back to the title screen.
  */
 class ChooseCharacterState : public State {
+public:
+    static constexpr std::size_t CharacterCount = 4;
+
 private:
-    // Future character selection private variables can be added here.
+    enum class PendingAction { None, OpenShop, Back };
+
+    GUI::Background background;
+    sf::Text titleText;
+    std::array<std::unique_ptr<GUI::Button>, CharacterCount> characterButtons;
+
+    /// Action requested by a button, executed at the start of update() (never inside handleEvent).
+    PendingAction pendingAction = PendingAction::None;
+    int pendingCharacter = -1;
+
+private:
+    void initUI();
 
 public:
-    /**
-     * @brief Constructs a new ChooseCharacterState instance.
-     *
-     * @param context The shared global context toolbox containing window, game, and asset managers.
-     */
     ChooseCharacterState(Context context);
 
-    /**
-     * @brief Handles SFML window events (such as key presses or mouse clicks).
-     *
-     * @param event Constant reference to the sf::Event being processed.
-     */
     void handleEvent(const sf::Event& event) override;
-
-    /**
-     * @brief Handles real-time polling inputs.
-     */
     void handleInput() override;
-
-    /**
-     * @brief Updates state logic per frame.
-     *
-     * @param deltaTime The frame duration time delta measured in seconds.
-     */
     void update(float deltaTime) override;
-
-    /**
-     * @brief Renders character selection UI elements onto the render window.
-     *
-     * @reference sf::RenderWindow Target render window.
-     */
     void draw(sf::RenderWindow& window) override;
 };

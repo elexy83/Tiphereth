@@ -22,8 +22,10 @@ namespace States
         /// The settings and configuration options menu state.
         Option,
 
-        /// The fighter or character selection screen state.
+        /// The character selection screen state.
         ChooseCharacter,
+
+        Shop,
 
         /// The active gameplay session state.
         Game

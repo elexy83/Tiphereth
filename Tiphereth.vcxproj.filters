@@ -33,6 +33,12 @@
     <ClCompile Include="src\GUI\Button.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="src\States\ShopState.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\States\GameState.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Core\Game.hpp">
@@ -68,6 +74,15 @@
     <ClInclude Include="include\Managers\InputManager.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="include\GUI\Background.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="include\States\ShopState.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="include\States\GameState.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
@@ -88,6 +103,15 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\french_gekota.ico">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="C:\Users\elexy\Pictures\20250608_002709.jpg">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="assets\backgrounds\Alele.jpg">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+    <Image Include="assets\backgrounds\NT22R.jpg">
       <Filter>Fichiers de ressources</Filter>
     </Image>
   </ItemGroup>

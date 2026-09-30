@@ -14,7 +14,8 @@ namespace Textures {
     enum class ID {
         Player,
         Enemy,
-        Background,
+        BackgroundOption,
+        BackgroundTitle,
         MenuButton
     };
 }
@@ -90,6 +91,14 @@ public:
         assert(found != mResourceMap.end() && "ResourceManager::get - Resource not found !");
 
         return *found->second;
+    }
+
+    /**
+     * @brief Checks whether a resource has been loaded.
+     */
+    bool has(Identifier id) const
+    {
+        return mResourceMap.find(id) != mResourceMap.end();
     }
 
 private:

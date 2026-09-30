@@ -2,6 +2,8 @@
 #include "States/TitleScreenMenuState.hpp"
 #include "States/OptionState.hpp"
 #include "States/ChooseCharacterState.hpp"
+#include "States/ShopState.hpp"
+#include "States/GameState.hpp"
 #include <iostream>
 
 namespace
@@ -132,6 +134,21 @@ void Game::initContext()
 	catch (std::exception& e) {
 		std::cerr << "ERREUR CRITIQUE : " << e.what() << std::endl;
 	}
+
+	try {
+		this->context.textures->load(Textures::ID::BackgroundTitle, "assets/backgrounds/NT22R.jpg");
+		this->context.textures->get(Textures::ID::BackgroundTitle).setSmooth(true);
+	}
+	catch (std::exception& e) {
+		std::cerr << "Background introuvable (fond noir utilise) : " << e.what() << std::endl;
+	}
+	try {
+		this->context.textures->load(Textures::ID::BackgroundOption, "assets/backgrounds/Alele.jpg");
+		this->context.textures->get(Textures::ID::BackgroundOption).setSmooth(true);
+	}
+	catch (std::exception& e) {
+		std::cerr << "Background introuvable (fond noir utilise) : " << e.what() << std::endl;
+	}
 }
 
 void Game::pushState(States::ID stateID)
@@ -160,8 +177,11 @@ std::unique_ptr<State> Game::createState(States::ID stateID)
 	case States::ID::ChooseCharacter:
 		return std::make_unique<ChooseCharacterState>(this->context);
 
-		// case States::ID::Game:
-		//	return std::make_unique<GameState>(this->context);
+	case States::ID::Shop:
+		return std::make_unique<ShopState>(this->context);
+
+	case States::ID::Game:
+		return std::make_unique<GameState>(this->context);
 
 	default:
 		return nullptr;

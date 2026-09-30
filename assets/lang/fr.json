@@ -3,6 +3,7 @@
   "menu.options": "Options",
   "menu.quit": "Quitter le jeu",
 
+
   "option.title": "OPTIONS",
   "option.res": "Resolution :",
   "option.fs": "Plein Ecran :",
@@ -22,6 +23,8 @@
   "option.col.key2": "Touche 2",
   "option.hint.controls": "Cliquez sur une touche pour la modifier - Molette : faire défiler",
   "option.hint.listening": "Appuyez sur une touche ou un bouton de souris - Suppr : effacer - Echap : annuler",
+
+
   "input.unbound": "-",
   "input.mouse.left": "Clic gauche",
   "input.mouse.right": "Clic droit",
@@ -40,5 +43,16 @@
   "input.action.secondary_action": "Action secondaire",
   "input.action.interact": "Interagir",
   "input.action.sprint": "Sprint",
-  "input.action.inventory": "Inventaire"
+  "input.action.inventory": "Inventaire",
+
+
+  "choose.title": "Choisissez votre personnage",
+  "choose.character.1": "Personnage 1",
+  "choose.character.2": "Personnage 2",
+  "choose.character.3": "Personnage 3",
+  "choose.character.4": "Personnage 4",
+  "shop.title": "Boutique",
+  "shop.play": "Jouer",
+  "game.placeholder": "Gameplay",
+  "game.hint": "Echap pour revenir",
 }

@@ -2,6 +2,7 @@
 
 #include "State.hpp"
 #include "GUI/Button.hpp"
+#include "GUI/Background.hpp"
 
 /**
  * @brief Main title screen menu state.
@@ -25,6 +26,8 @@ private:
 
     /// Interactive button to terminate the application session.
     GUI::Button quitButton;
+
+    GUI::Background background;
 
     PendingAction pendingAction = PendingAction::None;
 

@@ -124,7 +124,10 @@ void OptionState::initUI()
 {
 	sf::Font& font = this->context.fonts->get(Fonts::ID::Title);
 
-	// Dimmed background + centered panel
+	if (this->context.textures->has(Textures::ID::BackgroundOption))
+		background.setTexture(this->context.textures->get(Textures::ID::BackgroundOption));
+
+	// Dimmed layer + centered panel
 	overlay.setSize(sf::Vector2f(ScreenW, ScreenH));
 	overlay.setFillColor(sf::Color(0, 0, 0, 170));
 
@@ -473,7 +476,6 @@ void OptionState::handleBindingCapture(const sf::Event& event)
 		else if (InputManager::hasKeyName(code)) {
 			assignBinding(InputManager::Binding::fromKey(code));
 		}
-		// Keys we cannot serialize are ignored
 	}
 	else if (event.type == sf::Event::MouseButtonPressed)
 	{
@@ -593,6 +595,7 @@ void OptionState::update(float deltaTime)
 
 void OptionState::draw(sf::RenderWindow& window)
 {
+	window.draw(background);
 	window.draw(overlay);
 	window.draw(panel);
 	window.draw(titleText);
